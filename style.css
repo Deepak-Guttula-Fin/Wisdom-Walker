@@ -915,11 +915,12 @@ body.modal-open #settingsPanel {
     transform: scale(1.1) rotate(90deg);
 }
 
-/* Settings Panel - positioned on right side */
+/* Settings Panel - positioned in center and middle */
 #settingsPanel {
     position: fixed;
-    bottom: 80px;
-    right: 20px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     border: 2px solid rgba(102, 126, 234, 0.3);
     border-radius: 15px;

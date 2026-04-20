@@ -1643,13 +1643,34 @@ function closeEntriesLog() {
 }
 
 function renderEntriesLog() {
-    let data = JSON.parse(localStorage.getItem("finance")) || [];
     let tbody = document.getElementById("entriesLogBody");
     
     if (!tbody) return;
     
     tbody.innerHTML = "";
     
+    // Check if Firebase is properly initialized and user is logged in
+    if (typeof firebase !== 'undefined' && firebase.auth && currentUser) {
+        // Read from Firebase
+        firebaseGet(getCurrentUserPath('finance'))
+            .then(data => {
+                let financeData = data || [];
+                renderEntriesLogData(financeData, tbody);
+            })
+            .catch(error => {
+                console.error('Error reading finance data from Firebase:', error);
+                // Fallback to localStorage
+                let data = JSON.parse(localStorage.getItem("finance")) || [];
+                renderEntriesLogData(data, tbody);
+            });
+    } else {
+        // Fallback to localStorage
+        let data = JSON.parse(localStorage.getItem("finance")) || [];
+        renderEntriesLogData(data, tbody);
+    }
+}
+
+function renderEntriesLogData(data, tbody) {
     // Sort entries by entry date/time (newest first)
     let sortedData = data.sort((a, b) => {
         let dateA = new Date(a.entryDateTime || a.date);
@@ -1709,26 +1730,66 @@ function renderEntriesLog() {
 
 function deleteEntry(index) {
     if (confirm("Are you sure you want to delete this entry?")) {
-        let data = JSON.parse(localStorage.getItem("finance")) || [];
-        
-        // Remove the entry at the specified index
-        data.splice(index, 1);
-        
-        // Save the updated data
-        localStorage.setItem("finance", JSON.stringify(data));
-        
-        // Refresh all displays
-        calculateFinance();
-        renderSummaryTable();
-        renderExpenseTable();
-        renderFinanceLedger();
-        drawFinanceChart();
-        drawExpensesChart();
-        drawSIPChart();
-        
-        // Refresh the entries log
-        renderEntriesLog();
+        // Check if Firebase is properly initialized and user is logged in
+        if (typeof firebase !== 'undefined' && firebase.auth && currentUser) {
+            // Delete from Firebase
+            firebaseGet(getCurrentUserPath('finance'))
+                .then(data => {
+                    let financeData = data || [];
+                    
+                    // Remove the entry at the specified index
+                    financeData.splice(index, 1);
+                    
+                    // Save the updated data to Firebase
+                    return firebaseSet(getCurrentUserPath('finance'), financeData);
+                })
+                .then(() => {
+                    console.log("Entry deleted from Firebase");
+                    
+                    // Refresh all displays
+                    calculateFinance();
+                    renderSummaryTable();
+                    renderExpenseTable();
+                    renderFinanceLedger();
+                    drawFinanceChart();
+                    drawExpensesChart();
+                    drawSIPChart();
+                    
+                    // Refresh the entries log
+                    renderEntriesLog();
+                })
+                .catch(error => {
+                    console.error('Error deleting entry from Firebase:', error);
+                    // Fallback to localStorage
+                    deleteFromLocalStorage(index);
+                });
+        } else {
+            // Fallback to localStorage
+            deleteFromLocalStorage(index);
+        }
     }
+}
+
+function deleteFromLocalStorage(index) {
+    let data = JSON.parse(localStorage.getItem("finance")) || [];
+    
+    // Remove the entry at the specified index
+    data.splice(index, 1);
+    
+    // Save the updated data
+    localStorage.setItem("finance", JSON.stringify(data));
+    
+    // Refresh all displays
+    calculateFinance();
+    renderSummaryTable();
+    renderExpenseTable();
+    renderFinanceLedger();
+    drawFinanceChart();
+    drawExpensesChart();
+    drawSIPChart();
+    
+    // Refresh the entries log
+    renderEntriesLog();
 }
 
 function resetData() {
