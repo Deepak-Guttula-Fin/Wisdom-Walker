@@ -197,62 +197,6 @@
     <h3>📈 Monthly Progress</h3>
     <canvas id="chart" style="width: 100%; max-width: 600px; height: 300px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
 
-    <!-- DAILY TASKS BUTTON -->
-    <button id="dailyTasksBtn" onclick="openDailyTasksTab()">Apr 19, 2026</button>
-
-    <!-- 3D DAILY TASKS TAB -->
-    <div id="dailyTasksTab" class="daily-tasks-3d-tab hidden">
-        <div class="tab-3d-container">
-            <div class="tab-3d-header">
-                <h3 id="tabDate" style="color: #00ffaa; margin-bottom: 20px; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></h3>
-                <button class="close-tab-btn" onclick="closeDailyTasksTab()">✕</button>
-            </div>
-            
-            <div class="tab-3d-content">
-                <!-- TASK CATEGORIES -->
-                <div class="task-categories">
-                    <!-- Health & Lifestyle -->
-                    <div class="category">
-                        <h4>🏃 Health & Lifestyle</h4>
-                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> Workout / Gym (20EXP & 5Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> Hydration Goal - Minimum 3 liters (10EXP & 2Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> Healthy Eating - No junk food (10EXP & 2Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> Sleep Hygiene - 7-8 hours (10EXP & 2Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Cold Shower (15EXP & 3Coins)</label>
-                    </div>
-                    
-                    <!-- Financial Awareness -->
-                    <div class="category">
-                        <h4>💰 Financial Awareness</h4>
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Portfolio Review - Track investments (15EXP & 3Coins)</label>
-                    </div>
-                    
-                    <!-- Exam Preparation -->
-                    <div class="category">
-                        <h4>📚 Exam Preparation</h4>
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Reading Practice (15EXP & 3Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> Writing Practice (20EXP & 5Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Listening Practice (15EXP & 3Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> Speaking Practice (20EXP & 5Coins)</label>
-                    </div>
-                    
-                    <!-- Guilt System -->
-                    <div class="category">
-                        <h4>⚖️ Guilt Assessment</h4>
-                        <select id="guiltLevel">
-                            <option value="">No Guilt</option>
-                            <option value="low">Low Guilt (-5 Coins)</option>
-                            <option value="mid">Mid Guilt (-10 Coins)</option>
-                            <option value="high">High Guilt (-15 Coins)</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button onclick="saveDailyTasksFromTab()" style="background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 20px auto; display: block; box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3); transition: all 0.3s ease; font-size: 16px;">Save Tasks</button>
-            </div>
-        </div>
-    </div>
-
     <!-- AI CHARACTER -->
     <div id="aiCharacter" onclick="toggleChat()">
         <img src="wisdom walker.png" id="avatar">

@@ -259,65 +259,18 @@ function updateDailyTasksButton() {
     return formattedDate;
 }
 
-function openDailyTasksTab() {
-    // Update button date
-    const formattedDate = updateDailyTasksButton();
-    
-    // Update tab date
-    const tabDateElement = document.getElementById("tabDate");
-    if (tabDateElement) {
-        tabDateElement.innerText = formattedDate;
-    }
-    
-    // Show tab
-    const tab = document.getElementById("dailyTasksTab");
-    tab.classList.remove("hidden");
-    document.body.classList.add("modal-open");
-    document.body.classList.add("daily-tasks-open"); // Add this class to prevent blur
-    
-    // Load today's tasks
-    loadTodayTasks();
-    
-    // Update experience bar
-    updateExperienceBar();
-}
-
-function closeDailyTasksTab() {
-    // Hide the tab
-    const tab = document.getElementById("dailyTasksTab");
-    tab.classList.add("hidden");
-    if (tab) {
-        tab.classList.add("hidden");
-    }
-    document.body.classList.remove("modal-open");
-    document.body.classList.remove("daily-tasks-open"); 
-}
-
-function saveDailyTasksFromTab() {
-    try {
-        console.log('saveDailyTasksFromTab called');
+// Remove the event listener for daily tasks tab
+document.removeEventListener('click', function(e) {
+    const tab = document.getElementById('dailyTasksTab');
+    if (tab && !tab.classList.contains('hidden')) {
+        const isClickInsideTab = tab.contains(event.target);
+        const isClickOnButton = document.getElementById('dailyTasksBtn').contains(event.target);
         
-        // Verify tab exists before proceeding
-        const tab = document.getElementById("dailyTasksTab");
-        if (!tab) {
-            console.error('Daily tasks tab not found');
-            alert('Daily tasks tab not found. Please try again.');
-            return;
-        }
-        
-        // Save the tasks (reuse existing saveDailyTasks logic)
-        saveDailyTasks();
-        
-        // Close the tab after a short delay to show success message
-        setTimeout(() => {
+        if (!isClickInsideTab && !isClickOnButton) {
             closeDailyTasksTab();
-        }, 1500);
-        
-    } catch (error) {
-        console.error('Error saving daily tasks:', error);
-        alert('Error saving tasks: ' + error.message);
+        }
     }
-}
+});
 
 // ─── OPEN DAILY ENTRIES ──────────────────────────────────────────────────
 
