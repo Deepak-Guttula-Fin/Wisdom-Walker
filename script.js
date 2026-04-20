@@ -3271,6 +3271,12 @@ function testFunction() {
     alert('Test button is working! JavaScript is functional.');
 }
 
+// Simple mobile interface functions
+function testSimpleMobile() {
+    console.log('Simple mobile interface clicked!');
+    alert('Simple mobile interface is working!');
+}
+
 // Touch-friendly interactions
 function addTouchSupport() {
     // Add touch feedback to buttons
