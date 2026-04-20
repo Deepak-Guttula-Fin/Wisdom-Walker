@@ -99,6 +99,7 @@ function getAllDailyTasks(callback) {
     if (currentUser) {
         firebaseGet(getCurrentUserPath('dailyTasks'))
             .then(allTasks => {
+                // allTasks contains all date keys under dailyTasks
                 callback(allTasks || {});
             })
             .catch(error => {
@@ -181,9 +182,15 @@ function renderCalendar() {
             let taskCount = 0;
             let completedCount = 0;
             
+            // Debug logging for today's data
+            if (key === formatDateKey(new Date())) {
+                console.log('Today\'s task data:', data);
+                console.log('All tasks data:', allTasksData);
+            }
+            
             // Count tasks from new format
             for (let taskKey in data) {
-                if (taskKey !== 'guiltLevel' && taskKey !== 'totalEXP' && taskKey !== 'totalCoins' && taskKey !== 'date') {
+                if (taskKey !== 'guiltLevel' && taskKey !== 'totalEXP' && taskKey !== 'totalCoins' && taskKey !== 'date' && taskKey !== 'timestamp') {
                     taskCount++;
                     if (data[taskKey] === true) {
                         completedCount++;
