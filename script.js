@@ -3250,16 +3250,25 @@ function initializeUserData() {
 
 // Mobile Menu Functions
 function toggleMobileMenu() {
+    console.log('Mobile menu button clicked!');
     const homeButtons = document.querySelector('.home-buttons');
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     
     if (homeButtons.classList.contains('mobile-menu-open')) {
         homeButtons.classList.remove('mobile-menu-open');
         mobileMenuBtn.textContent = 'Menu';
+        console.log('Mobile menu closed');
     } else {
         homeButtons.classList.add('mobile-menu-open');
         mobileMenuBtn.textContent = 'Close';
+        console.log('Mobile menu opened');
     }
+}
+
+// Test function to verify JavaScript is working
+function testFunction() {
+    console.log('Test button clicked!');
+    alert('Test button is working! JavaScript is functional.');
 }
 
 // Touch-friendly interactions
