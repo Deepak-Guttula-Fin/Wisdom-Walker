@@ -399,6 +399,36 @@ function saveDailyTasksFromTab() {
     }
 }
 
+function loadDailyTasksForTab() {
+    try {
+        const today = new Date();
+        const dateKey = formatDateKey(today);
+        
+        if (currentUser) {
+            firebaseGet(getCurrentUserPath(`dailyTasks/${dateKey}`))
+                .then(savedData => {
+                    if (savedData) {
+                        // Load tasks into checkboxes using original format
+                        const taskCheckboxes = document.querySelectorAll('.daily-task');
+                        taskCheckboxes.forEach(checkbox => {
+                            // Get task text from label
+                            const label = checkbox.parentElement;
+                            const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
+                            
+                            // Check if task was completed
+                            checkbox.checked = savedData[taskText] || false;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading daily tasks:', error);
+                });
+        }
+    } catch (error) {
+        console.error('Error in loadDailyTasksForTab:', error);
+    }
+}
+
 // Add event listener for closing daily tasks tab when clicking outside
 document.addEventListener('click', function(e) {
     const tab = document.getElementById('dailyTasksTab');

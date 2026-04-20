@@ -826,21 +826,18 @@ body.modal-open.daily-tasks-open #financeApp {
 }
 
 /* Prevent blur on all elements when daily tasks tab is open */
-body.daily-tasks-open * {
-    filter: none !important;
-    pointer-events: auto !important;
-}
 
-overflow-y: auto;
-overflow-x: hidden;
-    height: 100%;
-    overflow-y: auto;
-    overflow-x: hidden;
-}
+    /* Don't blur past date modal when open */
+    body.modal-open #pastDateModal {
+        filter: none !important;
+        pointer-events: auto !important;
+    }
 
-.tab-3d-header {
-    display: flex;
-    justify-content: space-between;
+    /* Don't blur finance popup when open */
+    body.modal-open #financePopup {
+        filter: none !important;
+        pointer-events: auto !important;
+    }
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 15px;
@@ -1003,6 +1000,24 @@ body.modal-open .signup-container,
 body.modal-open .forgot-container {
     filter: none !important;
     pointer-events: auto !important;
+}
+
+/* Task Sections Styling */
+.task-section {
+    background: rgba(0, 255, 170, 0.08);
+    border: 1px solid rgba(0, 255, 170, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    transform: translateZ(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.task-section:hover {
+    background: rgba(0, 255, 170, 0.12);
+    transform: translateZ(8px) scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 255, 170, 0.2);
 }
 
 /* Progress History Table - Adjusted Width */
