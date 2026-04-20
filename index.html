@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wisdom Walker</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics-compat.js"></script>
+</head>
+
+<body>
+
+<!-- WELCOME OVERLAY & POPUP -->
+<div id="overlay" class="hidden"></div>
+<div id="welcomePopup" class="hidden">
+    <h2>👋 Welcome, I am Wisdom Walker</h2>
+    <p>Your personal productivity and finance companion</p>
+    <button onclick="closeWelcome()">Let's Start! 🚀</button>
+</div>
+
+<!-- 👤 FIRST TIME USER POPUP -->
+<div id="userPopup" class="popup hidden">
+    <h2>👋 Welcome, I am Wisdom Walker</h2>
+    <input type="text" id="nameInput" placeholder="Your Name"><br><br>
+    <button onclick="saveUser()">Start Journey 🚀</button>
+</div>
+
+<!-- 🤖 CENTER AVATAR (INTRO / QUOTES) -->
+<div id="centerAvatar" class="hidden">
+    <div class="avatar-quote-container">
+        <img src="wisdom walker.png" id="centerAvatarImg">
+        <div id="avatarSpeech"></div>
+    </div>
+</div>
+
+<!-- HOME SCREEN -->
+<div id="homeScreen">
+    <h1 class="title">Wisdom Walker</h1>
+    <p class="subtitle">Choose your tracker</p>
+
+    <div class="home-buttons">
+        <button onclick="openTasks()"> Tasks Tracker</button>
+        <button onclick="openFinance()"> Finance Tracker</button>
+    </div>
+    
+    <!-- SETTINGS BUTTON -->
+    <div id="homeSettingsBtn" onclick="openSettings()">⚙️</div>
+</div>
+
+<!-- TASK TRACKER -->
+<div id="taskApp" class="hidden">
+
+    <!-- BACK BUTTON -->
+    <button onclick="goHome()" class="backBtn"> Back</button>
+
+    <!-- EXP BAR SECTION -->
+    <div id="expBarContainer" style="position: fixed; top: 15px; right: 30px; width: 280px; z-index: 1000; padding: 15px;">
+        <!-- User Name -->
+        <div id="userName" style="color: #00ffaa; font-size: 16px; font-weight: bold; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;"></div>
+        
+        <!-- User Level -->
+        <div id="userLevelDisplay" style="color: #00ffaa; font-size: 14px; font-weight: bold; margin-bottom: 12px;">Level: I</div>
+        
+        <!-- EXP Bar -->
+        <div id="expBarWrapper" style="position: relative; width: 100%; height: 20px; margin-bottom: 15px;">
+            <div id="expBarBackground" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, #4a90e2, #5a9fd4, #6bb6ff);"></div>
+            <div id="expBar" style="position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, #ff6b6b, #ff8e53, #ffa500); border-radius: 10px; transition: width 0.5s ease; min-width: 2px; z-index: 1;"></div>
+        </div>
+        
+        <!-- Total Coins -->
+        <div style="display: flex; align-items: center; color: #00ffaa; font-size: 16px; font-weight: bold;">
+            <img src="Task tracker coin.png" class="coin-rotating" style="width: 20px; height: 20px; margin-right: 8px;">
+            <span id="totalCoinsDisplay">0</span>
+        </div>
+        
+        <!-- EXP Progress -->
+        <div style="display: flex; align-items: center; color: #00ffaa; font-size: 16px; font-weight: bold; margin-bottom: 8px;">
+            <span id="expProgressDisplay">0 / 500</span>
+        </div>
+    </div>
+
+    <!-- MONTH NAV -->
+    <div id="calendarHeader">
+        <button onclick="changeMonth(-1)">«</button>
+        <h2 id="monthYear"></h2>
+        <button onclick="changeMonth(1)">»</button>
+    </div>
+
+    <!-- DAY NAMES -->
+    <div id="calendarDays">
+        <div class="day-name">Sun</div>
+        <div class="day-name">Mon</div>
+        <div class="day-name">Tue</div>
+        <div class="day-name">Wed</div>
+        <div class="day-name">Thu</div>
+        <div class="day-name">Fri</div>
+        <div class="day-name">Sat</div>
+    </div>
+
+    <!-- CALENDAR GRID -->
+    <div id="calendar"></div>
+
+    <!-- GRAPH -->
+    <h3>📈 Monthly Progress</h3>
+    <canvas id="chart" style="width: 100%; max-width: 600px; height: 300px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
+
+    <!-- DAILY TASKS BUTTON -->
+    <button id="dailyTasksBtn" onclick="openDailyTasksTab()">Apr 19, 2026</button>
+
+    <!-- 3D DAILY TASKS TAB -->
+    <div id="dailyTasksTab" class="daily-tasks-3d-tab hidden">
+        <div class="tab-3d-container">
+            <div class="tab-3d-header">
+                <h3 id="tabDate" style="color: #00ffaa; margin-bottom: 20px; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></h3>
+                <button class="close-tab-btn" onclick="closeDailyTasksTab()">✕</button>
+            </div>
+            
+            <div class="tab-3d-content">
+                <!-- TASK CATEGORIES -->
+                <div class="task-categories">
+                    <!-- Health & Lifestyle -->
+                    <div class="category">
+                        <h4>🏃 Health & Lifestyle</h4>
+                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> Workout / Gym (20EXP & 5Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> Hydration Goal - Minimum 3 liters (10EXP & 2Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> Healthy Eating - No junk food (10EXP & 2Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> Sleep Hygiene - 7-8 hours (10EXP & 2Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Cold Shower (15EXP & 3Coins)</label>
+                    </div>
+                    
+                    <!-- Financial Awareness -->
+                    <div class="category">
+                        <h4>💰 Financial Awareness</h4>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Portfolio Review - Track investments (15EXP & 3Coins)</label>
+                    </div>
+                    
+                    <!-- Exam Preparation -->
+                    <div class="category">
+                        <h4>📚 Exam Preparation</h4>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Reading Practice (15EXP & 3Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> Writing Practice (20EXP & 5Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> Listening Practice (15EXP & 3Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> Speaking Practice (20EXP & 5Coins)</label>
+                    </div>
+                    
+                    <!-- Guilt System -->
+                    <div class="category">
+                        <h4>⚖️ Guilt Assessment</h4>
+                        <select id="guiltLevel">
+                            <option value="">No Guilt</option>
+                            <option value="low">Low Guilt (-5 Coins)</option>
+                            <option value="mid">Mid Guilt (-10 Coins)</option>
+                            <option value="high">High Guilt (-15 Coins)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="saveDailyTasksFromTab()" style="background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 20px auto; display: block; box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3); transition: all 0.3s ease; font-size: 16px;">Save Tasks</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI CHARACTER -->
+    <div id="aiCharacter" onclick="toggleChat()">
+        <img src="wisdom walker.png" id="avatar">
+    </div>
+
+    <!-- 💬 CHAT -->
+    <div id="chatBox" class="hidden">
+        <div id="chatMessages"></div>
+        <div style="display: flex; gap: 5px; margin-top: 10px;">
+            <input type="text" id="userInput" placeholder="Ask me anything..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <!-- 📂 HISTORY -->
+    <div id="historyTab" onclick="toggleHistory()">Progress History</div>
+
+    <div id="historyPanel" class="hidden">
+        <h3>Progress History</h3>
+        <div class="entries-table-container">
+            <table id="historyTable" class="entries-3d-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Tasks Accomplished</th>
+                        <th>EXP Gained</th>
+                        <th>Coins Collected</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <!-- History entries will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        <button onclick="closeHistory()">Back</button>
+    </div>
+
+    <!-- 📋 TASK POPUP -->
+    <div id="taskPopup" class="hidden">
+        <h2 id="selectedDate"></h2>
+
+        <div class="tasks">
+            <label><input type="checkbox" class="task"> Exam Prep</label>
+            <label><input type="checkbox" class="task"> Gym</label>
+            <label><input type="checkbox" class="task"> Skin Care</label>
+            <label><input type="checkbox" class="task"> Reading</label>
+        </div>
+
+        <h3 id="score"></h3>
+        <h3 id="coins"></h3>
+
+        <button onclick="saveTasks()">Save</button>
+        <button onclick="closePopup()">⬅ Back</button>
+    </div>
+
+</div>
+
+<!-- � PAST DATE DETAILS MODAL -->
+<div id="pastDateModal" class="hidden">
+    <div class="modal-content">
+        <h2 id="pastDateTitle"></h2>
+        
+        <div class="date-stats">
+            <div class="stat-box">
+                <span class="stat-label">🪙 Coins Earned</span>
+                <span id="pastDateCoins" class="stat-value">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">⚔ EXP Gained</span>
+                <span id="pastDateEXP" class="stat-value">0</span>
+            </div>
+        </div>
+        
+        <div class="task-sections">
+            <div class="task-section">
+                <h3>✅ Achieved Tasks</h3>
+                <div id="achievedTasks" class="task-list"></div>
+            </div>
+            
+            <div class="task-section">
+                <h3>❌ Unaccomplished Tasks</h3>
+                <div id="unaccomplishedTasks" class="task-list"></div>
+            </div>
+        </div>
+        
+        <button onclick="closePastDateModal()" class="close-btn">⬅ Back</button>
+    </div>
+</div>
+
+<!-- �� FINANCE TRACKER -->
+<div id="financeApp" class="hidden">
+
+    <!-- BACK BUTTON -->
+    <button onclick="goHome()" class="backBtn">⬅ Back</button>
+
+    <!-- HISTORY BUTTON -->
+    <button onclick="openEntriesLog()" class="historyBtn">📊 History</button>
+
+    <h2>💰 Financial Tracker</h2>
+
+    <!-- 🔷 SUMMARY BLOCKS -->
+    <div class="finance-grid-top">
+        <div class="card">💵 Income<br><span id="incomeVal">0</span></div>
+        <div class="card">💸 Expenses<br><span id="expenseVal">0</span></div>
+        <div class="card">📊 Balance<br><span id="balanceVal">0</span></div>
+    </div>
+    
+    <div class="finance-grid-bottom">
+        <div class="card">📈 Shares<br><span id="sharesVal">0</span></div>
+        <div class="card">📉 SIP<br><span id="sipVal">0</span></div>
+        <div class="card">🏦 Asset Savings<br><span id="assetVal">0</span></div>
+        <div class="card">💹 Profit<br><span id="profitVal">0</span></div>
+    </div>
+
+    <!-- PIE CHART -->
+    <h3>📊 Expense Distribution</h3>
+    <canvas id="financeChart" style="width: 100%; max-width: 400px; height: 200px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
+
+    <!-- BAR CHARTS -->
+    <h3>📊 Monthly Expenses</h3>
+    <canvas id="expensesChart" style="width: 100%; max-width: 400px; height: 200px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
+
+    <h3>📈 Monthly SIP</h3>
+    <canvas id="sipChart" style="width: 100%; max-width: 400px; height: 200px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
+
+    <!-- MAIN TABLE -->
+    <h3>📅 Monthly Summary</h3>
+    <div class="entries-table-container">
+        <button onclick="downloadTableCSV('summaryTable', 'monthly_summary')" style="margin-bottom: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📥 Download CSV</button>
+        <table id="summaryTable" class="entries-3d-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Income</th>
+                    <th>Expenses</th>
+                    <th>Shares</th>
+                    <th>SIP</th>
+                    <th>Asset</th>
+                    <th>Profit</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- EXPENSE TABLE -->
+    <h3>📊 Expense Breakdown</h3>
+    <button onclick="downloadTableCSV('expenseTable', 'expense_breakdown')" style="margin-bottom: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📥 Download CSV</button>
+    <div class="entries-table-container">
+        <table id="expenseTable" class="entries-3d-table">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Home</th>
+                    <th>Mobile</th>
+                    <th>Travel</th>
+                    <th>Health</th>
+                    <th>Education</th>
+                    <th>Food</th>
+                    <th>Entertainment</th>
+                    <th>Others</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <h3> Detailed Finance Ledger</h3>
+    <button onclick="downloadTableCSV('financeLedger', 'finance_ledger')" style="margin-bottom: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">📥 Download CSV</button>
+    <div class="entries-table-container">
+        <table id="financeLedger" class="entries-3d-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Income</th>
+                    <th>Other Income</th>
+                    <th>Redeem</th>
+                    <th>Profit Pulled</th>
+                    <th>Home</th>
+                    <th>Mobile</th>
+                    <th>Travel</th>
+                    <th>Health</th>
+                    <th>Education</th>
+                    <th>Food</th>
+                    <th>Entertainment</th>
+                    <th>Others</th>
+                    <th>Asset Savings</th>
+                    <th>Shares</th>
+                    <th>SIP</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ADD BUTTON -->
+    <div id="fab" onclick="openFinancePopup()">
+        <span>+</span>
+    </div>
+
+    <!-- ENTRIES LOG PANEL -->
+    <div id="entriesLogPanel" class="hidden">
+        <h3>Entries Log</h3>
+        <div class="entries-table-container">
+            <table id="entriesLogTable" class="entries-3d-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Sub Type</th>
+                        <th>Action</th>
+                        <th>Amount</th>
+                        <th>Note</th>
+                        <th>Entry Log</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="entriesLogBody">
+                    <!-- Entries will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        <button onclick="closeEntriesLog()">Back</button>
+    </div>
+
+</div>
+
+<!-- FINANCE POPUP -->
+<div id="financeOverlay" onclick="closeFinancePopup()"></div>
+
+<div id="financePopup">
+    <h3>Add Entry</h3>  
+
+    <!-- DATE -->
+    <input type="date" id="fDate">
+
+    <!-- MAIN TYPE -->
+    <select id="fMainType" onchange="updateSubType()">
+        <option value="">Select Type</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+        <option value="savings">Savings</option>
+    </select>
+
+    <!-- CATEGORY -->
+    <select id="fSubType">
+        <option value="">Select Category</option>
+    </select>
+
+    <!-- BUY/SELL (ONLY FOR SAVINGS) -->
+    <div id="buySellBox"></div>
+
+    <!-- AMOUNT -->
+    <input type="number" id="fAmount" placeholder="Amount">
+
+    <!-- NOTE (OPTIONAL) -->
+    <input type="text" id="fNote" placeholder="Note (optional)">
+
+    <!-- BUTTONS -->
+    <button onclick="saveFinance()">Save</button>
+    <button onclick="closeFinancePopup()">Close</button>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div id="settingsPanel" class="hidden">
+    <h3>Settings</h3>
+    <button onclick="resetData()">Reset All Data</button>
+    <button onclick="closeSettings()">Back</button>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
