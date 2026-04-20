@@ -2622,6 +2622,17 @@ table tr:hover {
 }
 
 /* ─── LOGIN/SIGNUP POPUPS ────────────────────────────────────────────── */
+#loginPopup,
+#signupPopup,
+#forgotPasswordPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    animation: popupFade 0.4s ease forwards;
+}
+
 .login-container,
 .signup-container,
 .forgot-container {
@@ -2630,7 +2641,7 @@ table tr:hover {
     border-radius: 20px;
     box-shadow: 0 0 30px rgba(0, 255, 150, 0.3);
     max-width: 400px;
-    margin: 0 auto;
+    width: 100%;
     animation: popupFade 0.4s ease forwards;
 }
 
