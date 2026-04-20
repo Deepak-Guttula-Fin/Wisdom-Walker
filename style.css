@@ -2285,7 +2285,7 @@ table tr:hover {
 
 /* Mobile Navigation Menu - Hidden by default, shown only on mobile devices */
 #mobileMenuBtn {
-    display: none;
+    display: block !important;
     position: fixed;
     top: 15px;
     left: 15px;
@@ -2301,6 +2301,15 @@ table tr:hover {
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
     transition: all 0.3s ease;
     min-width: 80px;
+}
+
+#mobileMenuBtn:hover {
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    transform: scale(1.05);
+}
+
+#mobileMenuBtn:active {
+    transform: scale(0.95);
 }
 
 .home-buttons {
