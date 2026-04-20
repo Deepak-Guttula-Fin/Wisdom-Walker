@@ -370,7 +370,13 @@ function loadTodayTasks() {
                     loadTasksFromData(savedData);
                 } else {
                     // Fallback to localStorage
-                    const localStorageData = JSON.parse(localStorage.getItem(todayKey)) || {};
+                    let localStorageData = {};
+                    try {
+                        localStorageData = JSON.parse(localStorage.getItem(todayKey)) || {};
+                    } catch (parseError) {
+                        console.warn('Invalid data in localStorage for today:', parseError);
+                        localStorageData = {};
+                    }
                     loadTasksFromData(localStorageData);
                 }
                 calculateTodayEXP();
@@ -378,19 +384,32 @@ function loadTodayTasks() {
             .catch(error => {
                 console.error('Error loading daily tasks from Firebase:', error);
                 // Fallback to localStorage
-                const localStorageData = JSON.parse(localStorage.getItem(todayKey)) || {};
+                let localStorageData = {};
+                try {
+                    localStorageData = JSON.parse(localStorage.getItem(todayKey)) || {};
+                } catch (parseError) {
+                    console.warn('Invalid data in localStorage for today:', parseError);
+                    localStorageData = {};
+                }
                 loadTasksFromData(localStorageData);
                 calculateTodayEXP();
             });
     } else {
         // Fallback to localStorage if no current user
-        const savedData = JSON.parse(localStorage.getItem(todayKey)) || {};
+        let savedData = {};
+        try {
+            savedData = JSON.parse(localStorage.getItem(todayKey)) || {};
+        } catch (parseError) {
+            console.warn('Invalid data in localStorage for today:', parseError);
+            savedData = {};
+        }
         loadTasksFromData(savedData);
         calculateTodayEXP();
     }
 }
 
 function loadTasksFromData(savedData) {
+    // ...
     // Load task checkboxes
     const tasks = document.querySelectorAll('.daily-task');
     tasks.forEach(task => {
@@ -594,7 +613,13 @@ function saveDailyTasks() {
 function calculateTodayEXP() {
     const today = new Date();
     const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    const savedData = JSON.parse(localStorage.getItem(todayKey)) || {};
+    let savedData = {};
+    try {
+        savedData = JSON.parse(localStorage.getItem(todayKey)) || {};
+    } catch (error) {
+        console.warn('Invalid data in localStorage for today:', error);
+        savedData = {};
+    }
     
     let totalEXP = 0;
     const tasks = document.querySelectorAll('.daily-task');
@@ -606,11 +631,16 @@ function calculateTodayEXP() {
     
     // Calculate cumulative EXP
     let cumulativeEXP = 0;
-    const allDays = Object.keys(localStorage).filter(key => !key.includes('entriesLog'));
+    const allDays = Object.keys(localStorage).filter(key => !key.includes('entriesLog') && !key.includes('user') && !key.includes('finance'));
     allDays.forEach(dayKey => {
-        const dayData = JSON.parse(localStorage.getItem(dayKey)) || {};
-        if (dayData.totalEXP) {
-            cumulativeEXP += dayData.totalEXP;
+        try {
+            const dayData = JSON.parse(localStorage.getItem(dayKey)) || {};
+            if (dayData.totalEXP) {
+                cumulativeEXP += dayData.totalEXP;
+            }
+        } catch (error) {
+            console.warn('Skipping invalid data for key:', dayKey, error);
+            // Skip invalid JSON data
         }
     });
     
@@ -697,7 +727,13 @@ function showPastDateDetails(key, year, month, day) {
     document.getElementById("pastDateTitle").textContent = formattedDate;
     
     // Load data for that date
-    const dayData = JSON.parse(localStorage.getItem(key)) || {};
+    let dayData = {};
+    try {
+        dayData = JSON.parse(localStorage.getItem(key)) || {};
+    } catch (error) {
+        console.warn('Invalid data in localStorage for date:', key, error);
+        dayData = {};
+    }
     
     // Calculate coins and EXP
     let totalCoins = dayData.totalCoins || 0;
