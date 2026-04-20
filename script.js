@@ -279,27 +279,34 @@ document.removeEventListener('click', function(e) {
 
 // Daily Tasks Tab Functions
 function openDailyTasksTab() {
-    // Update button date
-    const formattedDate = updateDailyTasksButton();
-    
-    // Show the tab
-    const tab = document.getElementById("dailyTasksTab");
-    tab.classList.remove("hidden");
-    
-    // Set the date in the tab header
-    const tabDateElement = document.getElementById("tabDate");
-    if (tabDateElement) {
-        tabDateElement.textContent = formattedDate;
+    try {
+        // Update button date
+        const formattedDate = updateDailyTasksButton();
+        
+        // Show the tab
+        const tab = document.getElementById("dailyTasksTab");
+        if (tab) {
+            tab.classList.remove("hidden");
+        }
+        
+        // Set the date in the tab header
+        const tabDateElement = document.getElementById("tabDate");
+        if (tabDateElement) {
+            tabDateElement.textContent = formattedDate;
+        }
+        
+        // Load saved tasks for today
+        loadDailyTasksForTab();
+        
+        // Add body class to prevent blur
+        document.body.classList.add("daily-tasks-open");
+        
+        // Update experience bar
+        updateExperienceBar();
+    } catch (error) {
+        console.error('Error in openDailyTasksTab:', error);
+        alert('Error opening daily tasks tab. Please try again.');
     }
-    
-    // Load saved tasks for today
-    loadDailyTasksForTab();
-    
-    // Add body class to prevent blur
-    document.body.classList.add("daily-tasks-open");
-    
-    // Update experience bar
-    updateExperienceBar();
 }
 
 function closeDailyTasksTab() {
@@ -1029,9 +1036,6 @@ function openTasks() {
         loadTodayTasks();
         drawGraph();
     }, 2000);
-
-    // Start avatar rotation immediately after task tracker loads
-    startTaskTrackerAvatarRotation();
 }
 
 function updateExperienceBar() {
