@@ -358,9 +358,31 @@ function saveDailyTasksFromTab() {
             }
         });
         
-        // Add totals to task data
-        taskData.totalEXP = totalEXP;
-        taskData.totalCoins = totalCoins;
+        // Get guilt level and apply penalties
+        const guiltLevelSelect = document.getElementById('guiltLevel');
+        const guiltLevel = guiltLevelSelect ? guiltLevelSelect.value : "";
+        let guiltCoinPenalty = 0;
+        let guiltEXPPenalty = 0;
+        
+        if (guiltLevel === 'low') {
+            guiltCoinPenalty = 5;
+            guiltEXPPenalty = 20;
+        } else if (guiltLevel === 'mid') {
+            guiltCoinPenalty = 10;
+            guiltEXPPenalty = 40;
+        } else if (guiltLevel === 'high') {
+            guiltCoinPenalty = 15;
+            guiltEXPPenalty = 60;
+        }
+        
+        // Apply guilt penalties with non-negative calculation
+        const finalCoins = Math.max(0, totalCoins - guiltCoinPenalty);
+        const finalEXP = Math.max(0, totalEXP - guiltEXPPenalty);
+        
+        // Add totals and guilt data to task data
+        taskData.totalEXP = finalEXP;
+        taskData.totalCoins = finalCoins;
+        taskData.guiltLevel = guiltLevel;
         taskData.date = dateKey;
         taskData.timestamp = new Date().toISOString();
         
@@ -379,8 +401,12 @@ function saveDailyTasksFromTab() {
                 updateTotalCoins();
                 updateExperienceBar();
                 
-                // Show success message
-                showNotification('Daily tasks saved successfully!', 'success');
+                // Show success message with guilt info
+                let message = 'Daily tasks saved successfully!';
+                if (guiltLevel) {
+                    message += ` (${guiltLevel} guilt applied)`;
+                }
+                showNotification(message, 'success');
                 
                 // Close the tab after a short delay to show success message
                 setTimeout(() => {
@@ -418,6 +444,13 @@ function loadDailyTasksForTab() {
                             // Check if task was completed
                             checkbox.checked = savedData[taskText] || false;
                         });
+                        
+                        // Load guilt level
+                        const guiltLevel = savedData.guiltLevel || "";
+                        const guiltLevelElement = document.getElementById('guiltLevel');
+                        if (guiltLevelElement) {
+                            guiltLevelElement.value = guiltLevel;
+                        }
                     }
                 })
                 .catch(error => {
