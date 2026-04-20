@@ -1387,7 +1387,13 @@ function greetUser(user) {
     }, 2500);
 }
 
-// ... (rest of the code remains the same)
+// Mobile Navigation Function
+function toggleMobileMenu() {
+    const mobileNav = document.getElementById('mobileNav');
+    if (mobileNav) {
+        mobileNav.classList.toggle('active');
+    }
+}
 
 function toggleChat() {
     document.getElementById("chatBox").classList.toggle("hidden");

@@ -2262,46 +2262,72 @@ table tr:hover {
     #coinBox {
         right: 15px;
         top: 15px;
-        padding: 8px 12px;
-        font-size: 12px;
-        border-radius: 8px;
     }
     
     /* Home screen */
     #homeScreen {
-        margin-top: 80px;
-        padding: 0 15px;
-    }
-    
-    /* Calendar adjustments */
-    #calendarHeader {
+        padding: 20px 15px;
+        min-height: 100vh;
+        display: flex;
         flex-direction: column;
-        gap: 10px;
-        margin: 5px;
     }
     
-    #calendarHeader button {
-        width: 100%;
-        padding: 10px;
-        margin: 2px 0;
+    /* Enhanced mobile buttons */
+    .home-btn {
+        padding: 20px 25px;
+        font-size: 18px;
+        margin: 12px;
+        min-height: 60px;
+        border-radius: 15px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3);
+        transition: all 0.3s ease;
+        width: calc(100% - 24px);
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
     }
     
-    #calendar,
-    #calendarDays {
-        max-width: 100%;
+    .home-btn:active {
+        transform: scale(0.98);
+        box-shadow: 0 2px 8px rgba(0, 255, 170, 0.4);
+    }
+    
+    /* Enhanced calendar for mobile */
+    #calendar {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
         gap: 4px;
-        margin: 5px;
+        margin: 15px 0;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
     }
     
     .day {
-        padding: 8px;
-        font-size: 12px;
-        border-radius: 6px;
+        padding: 10px;
+        font-size: 14px;
+        margin: 2px;
+        border-radius: 8px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .day:active {
+        transform: scale(0.95);
     }
     
     .day-name {
-        padding: 6px;
-        font-size: 11px;
+        padding: 8px;
+        font-size: 12px;
+        font-weight: bold;
+        color: #00ffaa;
     }
     
     /* Task popup */
