@@ -980,6 +980,135 @@ body.modal-open #settingsPanel {
     transform: scale(1.02);
 }
 
+/* Settings Sections */
+.settings-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.settings-section h4 {
+    color: #00ffaa;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.user-info {
+    margin-bottom: 15px;
+}
+
+.user-info p {
+    margin: 5px 0;
+    color: #ccc;
+    font-size: 14px;
+}
+
+.sign-out-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ff4d4d) !important;
+    color: white !important;
+    border: none !important;
+    padding: 12px 20px !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+}
+
+.sign-out-btn:hover {
+    background: linear-gradient(135deg, #ff4d4d, #ff3333) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 15px rgba(255, 77, 77, 0.4) !important;
+}
+
+/* Change Name Dialog */
+.change-name-container {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.change-name-container h3 {
+    color: #00ffaa;
+    margin: 0 0 20px 0;
+    font-size: 20px;
+    text-align: center;
+}
+
+.change-name-container .form-group {
+    margin-bottom: 20px;
+}
+
+.change-name-container label {
+    display: block;
+    margin-bottom: 8px;
+    color: #ccc;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.change-name-container input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid rgba(0, 255, 170, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.change-name-container input[type="text"]:focus {
+    outline: none;
+    border-color: #00ffaa;
+    box-shadow: 0 0 10px rgba(0, 255, 170, 0.3);
+}
+
+.dialog-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #00ffaa, #00cc88);
+    color: black;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+    background: linear-gradient(135deg, #00cc88, #00aa77);
+    transform: scale(1.05);
+}
+
+.cancel-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+    background: linear-gradient(135deg, #ff4d4d, #ff3333);
+    transform: scale(1.05);
+}
+
 @keyframes slideUp {
     from {
         opacity: 0;

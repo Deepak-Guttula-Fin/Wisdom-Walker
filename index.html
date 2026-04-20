@@ -526,8 +526,45 @@
 <!-- SETTINGS PANEL -->
 <div id="settingsPanel" class="hidden">
     <h3>Settings</h3>
-    <button onclick="resetData()">Reset All Data</button>
+    
+    <!-- User Profile Section -->
+    <div class="settings-section">
+        <h4>Profile</h4>
+        <div class="user-info">
+            <p id="settingsUserName">User Name: Loading...</p>
+            <p id="settingsUserEmail">Email: Loading...</p>
+        </div>
+        <button onclick="showChangeNameDialog()">Change Name</button>
+    </div>
+    
+    <!-- Account Actions Section -->
+    <div class="settings-section">
+        <h4>Account</h4>
+        <button onclick="logoutUser()" class="sign-out-btn">Sign Out</button>
+    </div>
+    
+    <!-- Data Management Section -->
+    <div class="settings-section">
+        <h4>Data Management</h4>
+        <button onclick="resetData()">Reset All Data</button>
+    </div>
+    
     <button onclick="closeSettings()">Back</button>
+</div>
+
+<!-- CHANGE NAME DIALOG -->
+<div id="changeNameDialog" class="popup hidden">
+    <div class="change-name-container">
+        <h3>Change Your Name</h3>
+        <div class="form-group">
+            <label for="newUserName">New Name</label>
+            <input type="text" id="newUserName" placeholder="Enter your new name" maxlength="50">
+        </div>
+        <div class="dialog-actions">
+            <button onclick="saveUserName()" class="save-btn">Save</button>
+            <button onclick="closeChangeNameDialog()" class="cancel-btn">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <!-- SCRIPTS -->

@@ -2911,6 +2911,9 @@ function loginUser() {
             // Update global user variable
             currentUser = user;
             
+            // Show home screen first
+            document.getElementById("homeScreen").classList.remove("hidden");
+            
             // Load user data
             loadUserData();
             
@@ -3020,11 +3023,14 @@ function createAccount() {
             document.getElementById('overlay').classList.add('hidden');
             document.body.classList.remove('modal-open');
             
+            // Show home screen first
+            document.getElementById('homeScreen').classList.remove('hidden');
+            
+            // Load user data
+            loadUserData();
+            
             // Show success message
             showNotification('Account created successfully! Welcome to Wisdom Walker.', 'success');
-            
-            // Show welcome screen
-            document.getElementById('homeScreen').classList.remove('hidden');
         })
         .catch((error) => {
             console.error('Signup error:', error);
@@ -3202,6 +3208,107 @@ function updateUserInfo() {
     if (greetingElement) {
         greetingElement.textContent = `Hello, ${userName}!`;
     }
+}
+
+// Settings functions
+function openSettings() {
+    const settingsPanel = document.getElementById('settingsPanel');
+    settingsPanel.classList.remove('hidden');
+    
+    // Update user info in settings
+    updateSettingsUserInfo();
+}
+
+function closeSettings() {
+    document.getElementById('settingsPanel').classList.add('hidden');
+}
+
+function updateSettingsUserInfo() {
+    const userName = localStorage.getItem('userName') || 'User';
+    const userEmail = localStorage.getItem('userEmail') || 'Not available';
+    
+    const userNameElement = document.getElementById('settingsUserName');
+    const userEmailElement = document.getElementById('settingsUserEmail');
+    
+    if (userNameElement) {
+        userNameElement.textContent = `User Name: ${userName}`;
+    }
+    
+    if (userEmailElement) {
+        userEmailElement.textContent = `Email: ${userEmail}`;
+    }
+}
+
+// Change name dialog functions
+function showChangeNameDialog() {
+    const dialog = document.getElementById('changeNameDialog');
+    const input = document.getElementById('newUserName');
+    
+    // Set current name as placeholder
+    const currentName = localStorage.getItem('userName') || '';
+    input.value = currentName;
+    input.placeholder = 'Enter your new name';
+    
+    // Show dialog
+    dialog.classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Focus input
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 100);
+}
+
+function closeChangeNameDialog() {
+    document.getElementById('changeNameDialog').classList.add('hidden');
+    document.getElementById('overlay').classList.add('hidden');
+    document.body.classList.remove('modal-open');
+    closeSettings();
+}
+
+function saveUserName() {
+    const newName = document.getElementById('newUserName').value.trim();
+    
+    if (!newName) {
+        alert('Please enter a name');
+        return;
+    }
+    
+    if (newName.length < 2) {
+        alert('Name must be at least 2 characters long');
+        return;
+    }
+    
+    if (newName.length > 50) {
+        alert('Name must be less than 50 characters');
+        return;
+    }
+    
+    // Update localStorage
+    localStorage.setItem('userName', newName);
+    
+    // Update Firebase if available
+    if (currentUser && typeof firebase !== 'undefined' && firebase.auth) {
+        currentUser.updateProfile({
+            displayName: newName
+        }).then(() => {
+            console.log('Firebase profile name updated');
+        }).catch((error) => {
+            console.error('Error updating Firebase profile name:', error);
+        });
+    }
+    
+    // Update all UI elements
+    updateUserInfo();
+    updateSettingsUserInfo();
+    
+    // Close dialog
+    closeChangeNameDialog();
+    
+    // Show success notification
+    showNotification('Name updated successfully!', 'success');
 }
 
 // Show notification
