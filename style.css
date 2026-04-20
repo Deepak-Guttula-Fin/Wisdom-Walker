@@ -923,10 +923,11 @@ body.modal-open #settingsPanel {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     border: 2px solid rgba(102, 126, 234, 0.3);
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     z-index: 1001;
-    min-width: 200px;
+    min-width: 180px;
+    max-width: 250px;
     animation: slideUp 0.3s ease;
 }
 
@@ -957,8 +958,8 @@ body.modal-open #settingsPanel {
 
 /* Settings Sections */
 .settings-section {
-    margin-bottom: 20px;
-    padding: 15px;
+    margin-bottom: 15px;
+    padding: 10px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -966,19 +967,19 @@ body.modal-open #settingsPanel {
 
 .settings-section h4 {
     color: #00ffaa;
-    margin: 0 0 10px 0;
-    font-size: 16px;
+    margin: 0 0 8px 0;
+    font-size: 14px;
     font-weight: bold;
 }
 
 .user-info {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .user-info p {
-    margin: 5px 0;
+    margin: 3px 0;
     color: #ccc;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .sign-out-btn {
@@ -1134,6 +1135,29 @@ body.modal-open #financeApp {
     font-size: 14px;
     color: #ccc;
     margin-bottom: 10px;
+}
+
+/* Home User Name Display */
+.home-user-name {
+    font-size: 24px;
+    font-weight: bold;
+    color: #00ffaa;
+    margin: 20px 0 30px 0;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 1px;
+    animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ─── COIN BOX ───────────────────────────────────────────────────────────────── */

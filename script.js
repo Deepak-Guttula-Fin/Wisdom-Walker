@@ -3218,6 +3218,12 @@ function updateUserInfo() {
         userNameElement.textContent = userName.toUpperCase();
     }
     
+    // Update home page user name
+    const homeUserNameElement = document.getElementById('homeUserName');
+    if (homeUserNameElement) {
+        homeUserNameElement.textContent = `Welcome, ${userName}!`;
+    }
+    
     // Update greeting
     const greetingElement = document.getElementById('greeting');
     if (greetingElement) {
