@@ -89,6 +89,11 @@ function getDailyTasksData(dateKey, callback) {
     }
 }
 
+// Helper function to format date key
+function formatDateKey(date) {
+    return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+}
+
 // Helper function to get all daily tasks from Firebase
 function getAllDailyTasks(callback) {
     if (currentUser) {
@@ -371,40 +376,12 @@ function saveDailyTasksFromTab() {
             })
             .catch((error) => {
                 console.error('Error saving daily tasks:', error);
-                alert('Error saving tasks. Please try again.');
+                alert(`Error saving tasks: ${error.message}`);
             });
             
     } catch (error) {
         console.error('Error in saveDailyTasksFromTab:', error);
-        alert('Error saving tasks. Please try again.');
-    }
-}
-
-function loadDailyTasksForTab() {
-    const today = new Date();
-    const dateKey = formatDateKey(today);
-    
-    if (currentUser) {
-        firebaseGet(getCurrentUserPath(`tasks/${dateKey}`))
-            .then(savedData => {
-                if (savedData && savedData.tasks) {
-                    // Load tasks into checkboxes
-                    const taskCheckboxes = document.querySelectorAll('.daily-task');
-                    taskCheckboxes.forEach(checkbox => {
-                        const category = checkbox.dataset.category;
-                        const taskName = checkbox.dataset.task;
-                        
-                        if (savedData.tasks[category] && savedData.tasks[category].includes(taskName)) {
-                            checkbox.checked = true;
-                        } else {
-                            checkbox.checked = false;
-                        }
-                    });
-                }
-            })
-            .catch(error => {
-                console.error('Error loading daily tasks:', error);
-            });
+        alert(`Error saving tasks: ${error.message}`);
     }
 }
 
@@ -528,7 +505,10 @@ function loadTasksFromData(savedData) {
     
     // Load guilt level
     const guiltLevel = savedData.guiltLevel || "";
-    document.getElementById('guiltLevel').value = guiltLevel;
+    const guiltLevelElement = document.getElementById('guiltLevel');
+    if (guiltLevelElement) {
+        guiltLevelElement.value = guiltLevel;
+    }
 }
 
 function saveDailyTasks() {
