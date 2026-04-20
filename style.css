@@ -858,6 +858,22 @@ body.modal-open #settingsPanel {
     pointer-events: auto !important;
 }
 
+/* Don't blur login/signup/forgot password popups when open */
+body.modal-open #loginPopup,
+body.modal-open #signupPopup,
+body.modal-open #forgotPasswordPopup {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
+/* Don't blur login/signup/forgot password containers when open */
+body.modal-open .login-container,
+body.modal-open .signup-container,
+body.modal-open .forgot-container {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
 /* Progress History Table - Adjusted Width */
 #historyPanel {
     max-width: 98vw;
