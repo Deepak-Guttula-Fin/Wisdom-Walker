@@ -1303,11 +1303,21 @@ function logoutUser() {
     if (typeof firebase !== 'undefined' && firebase.auth) {
         firebase.auth().signOut().then(() => {
             console.log('User signed out from Firebase');
+            // After Firebase sign out is complete, proceed with local logout
+            completeLogout();
         }).catch((error) => {
             console.error('Error signing out from Firebase:', error);
+            // Even if Firebase sign out fails, proceed with local logout
+            completeLogout();
         });
+    } else {
+        // No Firebase available, just do local logout
+        completeLogout();
     }
-    
+}
+
+// Complete the logout process
+function completeLogout() {
     // Clear all local storage session data
     localStorage.removeItem('userUid');
     localStorage.removeItem('userEmail');
@@ -1321,8 +1331,13 @@ function logoutUser() {
     document.getElementById("taskApp").classList.add("hidden");
     document.getElementById("financeApp").classList.add("hidden");
     
-    // Show login interface
-    showLogin();
+    // Close any open panels
+    document.getElementById('settingsPanel').classList.add('hidden');
+    
+    // Show login interface with a delay to ensure it's not overridden
+    setTimeout(() => {
+        showLogin();
+    }, 100);
 }
 
 function saveUser() {

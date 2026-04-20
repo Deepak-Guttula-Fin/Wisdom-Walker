@@ -915,31 +915,6 @@ body.modal-open #settingsPanel {
     transform: scale(1.1) rotate(90deg);
 }
 
-/* Home Logout Button */
-#homeLogoutBtn {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    background: linear-gradient(135deg, #ff6b6b, #ff4d4d);
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    box-shadow: 0 4px 15px rgba(255, 77, 77, 0.3);
-    transition: all 0.3s ease;
-    z-index: 1000;
-    font-size: 14px;
-    min-height: 44px;
-}
-
-#homeLogoutBtn:hover {
-    background: linear-gradient(135deg, #ff4d4d, #ff3333);
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(255, 77, 77, 0.4);
-}
-
 /* Settings Panel - positioned on right side */
 #settingsPanel {
     position: fixed;
