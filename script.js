@@ -272,6 +272,155 @@ document.removeEventListener('click', function(e) {
     }
 });
 
+// Daily Tasks Tab Functions
+function openDailyTasksTab() {
+    // Update button date
+    const formattedDate = updateDailyTasksButton();
+    
+    // Show the tab
+    const tab = document.getElementById("dailyTasksTab");
+    tab.classList.remove("hidden");
+    
+    // Set the date in the tab header
+    const tabDateElement = document.getElementById("tabDate");
+    if (tabDateElement) {
+        tabDateElement.textContent = formattedDate;
+    }
+    
+    // Load saved tasks for today
+    loadDailyTasksForTab();
+    
+    // Add body class to prevent blur
+    document.body.classList.add("daily-tasks-open");
+    
+    // Update experience bar
+    updateExperienceBar();
+}
+
+function closeDailyTasksTab() {
+    // Hide the tab
+    const tab = document.getElementById("dailyTasksTab");
+    tab.classList.add("hidden");
+    
+    // Remove body class
+    document.body.classList.remove("daily-tasks-open"); 
+}
+
+function saveDailyTasksFromTab() {
+    try {
+        console.log('saveDailyTasksFromTab called');
+        
+        // Verify tab exists before proceeding
+        const tab = document.getElementById("dailyTasksTab");
+        if (!tab) {
+            console.error('Daily tasks tab not found');
+            return;
+        }
+        
+        // Get current date
+        const today = new Date();
+        const dateKey = formatDateKey(today);
+        
+        // Collect all task data from checkboxes
+        const taskCheckboxes = tab.querySelectorAll('.daily-task');
+        const tasks = {};
+        
+        taskCheckboxes.forEach(checkbox => {
+            const category = checkbox.dataset.category;
+            const taskName = checkbox.dataset.task;
+            
+            if (!tasks[category]) {
+                tasks[category] = [];
+            }
+            
+            if (checkbox.checked) {
+                tasks[category].push(taskName);
+            }
+        });
+        
+        // Save to Firebase
+        const userPath = getCurrentUserPath();
+        const taskPath = `${userPath}/tasks/${dateKey}`;
+        
+        const taskData = {
+            tasks: tasks,
+            date: dateKey,
+            timestamp: new Date().toISOString(),
+            completed: Object.keys(tasks).reduce((total, category) => total + tasks[category].length, 0)
+        };
+        
+        firebaseSet(taskPath, taskData)
+            .then(() => {
+                console.log('Daily tasks saved successfully');
+                
+                // Update calendar
+                renderCalendar();
+                
+                // Update experience and coins
+                updateTotalCoins();
+                updateExperienceBar();
+                
+                // Show success message
+                showNotification('Daily tasks saved successfully!', 'success');
+                
+                // Close the tab after a short delay to show success message
+                setTimeout(() => {
+                    closeDailyTasksTab();
+                }, 1500);
+                
+            })
+            .catch((error) => {
+                console.error('Error saving daily tasks:', error);
+                alert('Error saving tasks. Please try again.');
+            });
+            
+    } catch (error) {
+        console.error('Error in saveDailyTasksFromTab:', error);
+        alert('Error saving tasks. Please try again.');
+    }
+}
+
+function loadDailyTasksForTab() {
+    const today = new Date();
+    const dateKey = formatDateKey(today);
+    
+    if (currentUser) {
+        firebaseGet(getCurrentUserPath(`tasks/${dateKey}`))
+            .then(savedData => {
+                if (savedData && savedData.tasks) {
+                    // Load tasks into checkboxes
+                    const taskCheckboxes = document.querySelectorAll('.daily-task');
+                    taskCheckboxes.forEach(checkbox => {
+                        const category = checkbox.dataset.category;
+                        const taskName = checkbox.dataset.task;
+                        
+                        if (savedData.tasks[category] && savedData.tasks[category].includes(taskName)) {
+                            checkbox.checked = true;
+                        } else {
+                            checkbox.checked = false;
+                        }
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error loading daily tasks:', error);
+            });
+    }
+}
+
+// Add event listener for closing daily tasks tab when clicking outside
+document.addEventListener('click', function(e) {
+    const tab = document.getElementById('dailyTasksTab');
+    if (tab && !tab.classList.contains('hidden')) {
+        const isClickInsideTab = tab.contains(event.target);
+        const isClickOnButton = document.getElementById('dailyTasksBtn').contains(event.target);
+        
+        if (!isClickInsideTab && !isClickOnButton) {
+            closeDailyTasksTab();
+        }
+    }
+});
+
 // ─── OPEN DAILY ENTRIES ──────────────────────────────────────────────────
 
 function openDailyEntries() {

@@ -675,6 +675,162 @@ from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
 to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
+/* 3D DAILY TASKS TAB */
+.daily-tasks-3d-tab {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    height: auto;
+    max-height: 80vh;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    border: 2px solid rgba(0, 255, 170, 0.3);
+    border-radius: 20px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.4),
+        0 10px 20px rgba(0, 255, 170, 0.2),
+        inset 0 0 20px rgba(0, 255, 170, 0.1);
+    z-index: 2000;
+    overflow-y: auto;
+    animation: popupFade 0.3s ease;
+}
+
+.tab-3d-container {
+    padding: 30px;
+    perspective: 1000px;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.tab-3d-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid rgba(0, 255, 170, 0.3);
+    background: rgba(0, 255, 170, 0.05);
+    border-radius: 15px;
+    padding: 15px;
+    transform: translateZ(20px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.close-tab-btn {
+    background: linear-gradient(135deg, #ff4d4d, #cc0000);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
+    transition: all 0.3s ease;
+}
+
+.close-tab-btn:hover {
+    background: linear-gradient(135deg, #ff6666, #ff0000);
+    transform: scale(1.05);
+}
+
+.tab-3d-content {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    padding: 20px;
+    border: 1px solid rgba(0, 255, 170, 0.2);
+    transform: translateZ(10px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.tab-3d-content .category {
+    background: rgba(0, 255, 170, 0.08);
+    border: 1px solid rgba(0, 255, 170, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    transform: translateZ(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.tab-3d-content .category:hover {
+    background: rgba(0, 255, 170, 0.12);
+    transform: translateZ(8px) scale(1.02);
+}
+
+.tab-3d-content .category h4 {
+    color: #00ffaa;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tab-3d-content label {
+    display: block;
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.tab-3d-content label:hover {
+    background: rgba(0, 255, 170, 0.15);
+    border: 1px solid rgba(0, 255, 170, 0.3);
+}
+
+.tab-3d-content .daily-task {
+    accent-color: #00ffaa;
+}
+
+.tab-3d-content select {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 170, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+/* Don't blur when 3D daily tasks tab is open */
+body.modal-open #dailyTasksTab {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
+/* Don't blur tab content when modal is open */
+body.modal-open #dailyTasksTab * {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
+/* Don't blur tab-3d-container and its content */
+body.modal-open .tab-3d-container,
+body.modal-open .tab-3d-content,
+body.modal-open .tab-3d-header {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
+/* Prevent blur when daily tasks tab is open */
+body.modal-open.daily-tasks-open #homeScreen,
+body.modal-open.daily-tasks-open #taskApp,
+body.modal-open.daily-tasks-open #financeApp {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
+/* Prevent blur on all elements when daily tasks tab is open */
+body.daily-tasks-open * {
+    filter: none !important;
+    pointer-events: auto !important;
+}
+
 overflow-y: auto;
 overflow-x: hidden;
     height: 100%;

@@ -197,6 +197,9 @@
     <h3>📈 Monthly Progress</h3>
     <canvas id="chart" style="width: 100%; max-width: 600px; height: 300px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
 
+    <!-- DAILY TASKS BUTTON -->
+    <button id="dailyTasksBtn" onclick="openDailyTasksTab()">Apr 19, 2026</button>
+
     <!-- AI CHARACTER -->
     <div id="aiCharacter" onclick="toggleChat()">
         <img src="wisdom walker.png" id="avatar">
@@ -250,6 +253,59 @@
 
         <button onclick="saveTasks()">Save</button>
         <button onclick="closePopup()">⬅ Back</button>
+    </div>
+
+    <!-- 3D DAILY TASKS TAB -->
+    <div id="dailyTasksTab" class="daily-tasks-3d-tab hidden">
+        <div class="tab-3d-container">
+            <div class="tab-3d-header">
+                <h3 id="tabDate" style="color: #00ffaa; margin-bottom: 20px; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></h3>
+                <button class="close-tab-btn" onclick="closeDailyTasksTab()">×</button>
+            </div>
+            
+            <div class="tab-3d-content">
+                <!-- TASK CATEGORIES -->
+                <div class="task-categories">
+                    <!-- Health & Lifestyle -->
+                    <div class="category">
+                        <h4>Health & Lifestyle</h4>
+                        <label><input type="checkbox" class="daily-task" data-category="health" data-task="exercise"> Exercise (30 min)</label>
+                        <label><input type="checkbox" class="daily-task" data-category="health" data-task="meditation"> Meditation (10 min)</label>
+                        <label><input type="checkbox" class="daily-task" data-category="health" data-task="water"> Drink 8 glasses water</label>
+                        <label><input type="checkbox" class="daily-task" data-category="health" data-task="sleep"> 8 hours sleep</label>
+                    </div>
+                    
+                    <!-- Work & Productivity -->
+                    <div class="category">
+                        <h4>Work & Productivity</h4>
+                        <label><input type="checkbox" class="daily-task" data-category="work" data-task="planning"> Daily planning</label>
+                        <label><input type="checkbox" class="daily-task" data-category="work" data-task="focus"> Deep work (2 hours)</label>
+                        <label><input type="checkbox" class="daily-task" data-category="work" data-task="email"> Check emails</label>
+                        <label><input type="checkbox" class="daily-task" data-category="work" data-task="meeting"> Important meetings</label>
+                    </div>
+                    
+                    <!-- Learning & Growth -->
+                    <div class="category">
+                        <h4>Learning & Growth</h4>
+                        <label><input type="checkbox" class="daily-task" data-category="learning" data-task="reading"> Reading (30 min)</label>
+                        <label><input type="checkbox" class="daily-task" data-category="learning" data-task="course"> Online course/module</label>
+                        <label><input type="checkbox" class="daily-task" data-category="learning" data-task="practice"> Practice skill</label>
+                        <label><input type="checkbox" class="daily-task" data-category="learning" data-task="reflection"> Daily reflection</label>
+                    </div>
+                    
+                    <!-- Personal & Social -->
+                    <div class="category">
+                        <h4>Personal & Social</h4>
+                        <label><input type="checkbox" class="daily-task" data-category="personal" data-task="family"> Family time</label>
+                        <label><input type="checkbox" class="daily-task" data-category="personal" data-task="friends"> Connect with friends</label>
+                        <label><input type="checkbox" class="daily-task" data-category="personal" data-task="hobby"> Hobby time</label>
+                        <label><input type="checkbox" class="daily-task" data-category="personal" data-task="gratitude"> Gratitude practice</label>
+                    </div>
+                </div>
+                
+                <button onclick="saveDailyTasksFromTab()" style="background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 20px auto; display: block; box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3); transition: all 0.3s ease; font-size: 16px;">Save Tasks</button>
+            </div>
+        </div>
     </div>
 
 </div>
