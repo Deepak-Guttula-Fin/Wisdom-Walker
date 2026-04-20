@@ -3248,6 +3248,82 @@ function initializeUserData() {
         });
 }
 
+// Mobile Menu Functions
+function toggleMobileMenu() {
+    const homeButtons = document.querySelector('.home-buttons');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    
+    if (homeButtons.classList.contains('mobile-menu-open')) {
+        homeButtons.classList.remove('mobile-menu-open');
+        mobileMenuBtn.textContent = 'Menu';
+    } else {
+        homeButtons.classList.add('mobile-menu-open');
+        mobileMenuBtn.textContent = 'Close';
+    }
+}
+
+// Touch-friendly interactions
+function addTouchSupport() {
+    // Add touch feedback to buttons
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        button.addEventListener('touchstart', function() {
+            this.style.transform = 'scale(0.95)';
+        });
+        
+        button.addEventListener('touchend', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Add swipe gestures for mobile navigation
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+    });
+    
+    document.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    });
+    
+    function handleSwipe() {
+        const swipeThreshold = 100;
+        const swipeDistance = touchEndX - touchStartX;
+        
+        // Swipe right to open menu
+        if (swipeDistance > swipeThreshold) {
+            const homeButtons = document.querySelector('.home-buttons');
+            if (!homeButtons.classList.contains('mobile-menu-open')) {
+                toggleMobileMenu();
+            }
+        }
+        
+        // Swipe left to close menu
+        if (swipeDistance < -swipeThreshold) {
+            const homeButtons = document.querySelector('.home-buttons');
+            if (homeButtons.classList.contains('mobile-menu-open')) {
+                toggleMobileMenu();
+            }
+        }
+    }
+    
+    // Prevent zoom on double tap for buttons
+    const interactiveElements = document.querySelectorAll('button, input, .day, .home-btn');
+    interactiveElements.forEach(element => {
+        element.addEventListener('touchend', function(e) {
+            e.preventDefault();
+        });
+    });
+}
+
+// Initialize touch support when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    addTouchSupport();
+});
+
 // Load user data
 function loadUserData() {
     // Load all user-specific data
