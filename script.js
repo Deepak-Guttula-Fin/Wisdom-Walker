@@ -336,9 +336,22 @@ function saveDailyTasksFromTab() {
             return;
         }
         
-        // Get current date
-        const today = new Date();
-        const dateKey = formatDateKey(today);
+        // Get the date from the tab header (this will be the selected date)
+        const tabDateElement = document.getElementById("tabDate");
+        const selectedDateText = tabDateElement ? tabDateElement.textContent : '';
+        
+        // Parse the selected date or fall back to today
+        let selectedDate;
+        try {
+            selectedDate = new Date(selectedDateText);
+            if (isNaN(selectedDate.getTime())) {
+                selectedDate = new Date();
+            }
+        } catch (error) {
+            selectedDate = new Date();
+        }
+        
+        const dateKey = formatDateKey(selectedDate);
         
         // Collect all task data from checkboxes
         const taskCheckboxes = tab.querySelectorAll('.daily-task');
@@ -472,6 +485,62 @@ function loadDailyTasksForTab() {
         }
     } catch (error) {
         console.error('Error in loadDailyTasksForTab:', error);
+    }
+}
+
+function loadDailyTasksForDate(dateKey) {
+    try {
+        if (currentUser) {
+            firebaseGet(getCurrentUserPath(`dailyTasks/${dateKey}`))
+                .then(savedData => {
+                    if (savedData) {
+                        // Load tasks into checkboxes using original format
+                        const taskCheckboxes = document.querySelectorAll('.daily-task');
+                        taskCheckboxes.forEach(checkbox => {
+                            // Get task text from label
+                            const label = checkbox.parentElement;
+                            const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
+                            
+                            // Sanitize task name to match Firebase keys
+                            const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
+                            
+                            // Check if task was completed (check both sanitized and original for backward compatibility)
+                            checkbox.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
+                        });
+                        
+                        // Load guilt level
+                        const guiltLevel = savedData.guiltLevel || "";
+                        const guiltLevelElement = document.getElementById('guiltLevel');
+                        if (guiltLevelElement) {
+                            guiltLevelElement.value = guiltLevel;
+                        }
+                    } else {
+                        // If no data exists, clear all checkboxes and guilt level
+                        const taskCheckboxes = document.querySelectorAll('.daily-task');
+                        taskCheckboxes.forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        const guiltLevelElement = document.getElementById('guiltLevel');
+                        if (guiltLevelElement) {
+                            guiltLevelElement.value = "";
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading daily tasks for date:', error);
+                    // Clear checkboxes on error
+                    const taskCheckboxes = document.querySelectorAll('.daily-task');
+                    taskCheckboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                    const guiltLevelElement = document.getElementById('guiltLevel');
+                    if (guiltLevelElement) {
+                        guiltLevelElement.value = "";
+                    }
+                });
+        }
+    } catch (error) {
+        console.error('Error in loadDailyTasksForDate:', error);
     }
 }
 
@@ -876,14 +945,54 @@ function calculateStreaks() {
     // This is a simplified streak calculation
     // In a full implementation, we would track consecutive days and calculate bonuses
     dailyStreak = 1; // Placeholder
-    weeklyStreak = 1; // Placeholder
-}
 
 // ─── OPEN DAY ─────────────────────────────────────────────────
 
 function openDay(key, year, month, day) {
-    // Use the same format for all dates - show past date details modal
-    showPastDateDetails(key, year, month, day);
+    // Open daily tasks tab for any date click
+    openDailyTasksTabForDate(key, year, month, day);
+}
+
+function openDailyTasksTabForDate(key, year, month, day) {
+    try {
+        // Update button date to show selected date
+        const selectedDate = new Date(year, month, day);
+        const formattedDate = selectedDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: '2-digit', 
+            year: 'numeric' 
+        });
+        
+        // Update button text to show selected date
+        const dailyTasksBtn = document.getElementById("dailyTasksBtn");
+        if (dailyTasksBtn) {
+            dailyTasksBtn.innerText = formattedDate;
+        }
+        
+        // Show the tab
+        const tab = document.getElementById("dailyTasksTab");
+        if (tab) {
+            tab.classList.remove("hidden");
+        }
+        
+        // Set the date in the tab header
+        const tabDateElement = document.getElementById("tabDate");
+        if (tabDateElement) {
+            tabDateElement.textContent = formattedDate;
+        }
+        
+        // Load saved tasks for the selected date
+        loadDailyTasksForDate(key);
+        
+        // Add body class to prevent blur
+        document.body.classList.add("daily-tasks-open");
+        
+        // Update experience bar
+        updateExperienceBar();
+    } catch (error) {
+        console.error('Error opening daily tasks tab for date:', error);
+        alert('Error opening daily tasks tab. Please try again.');
+    }
 }
 
 function showPastDateDetails(key, year, month, day) {
