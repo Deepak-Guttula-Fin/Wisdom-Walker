@@ -2304,7 +2304,58 @@ table tr:hover {
 }
 
 .home-buttons {
-    display: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    top: 70px !important;
+    left: 15px !important;
+    right: 15px !important;
+    background: linear-gradient(135deg, #1e3c72, #2a5298) !important;
+    border-radius: 20px !important;
+    padding: 20px !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3) !important;
+    z-index: 1001 !important;
+    gap: 15px !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transform: translateY(-20px) !important;
+    transition: all 0.3s ease !important;
+}
+
+.home-buttons.mobile-menu-open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
+.home-buttons button {
+    width: 100% !important;
+    padding: 20px 25px !important;
+    font-size: 18px !important;
+    font-weight: bold !important;
+    border-radius: 15px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    min-height: 60px !important;
+    letter-spacing: 0.5px !important;
+    box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3) !important;
+    background: linear-gradient(135deg, #00ffaa, #00cc88) !important;
+    color: black !important;
+    margin: 0 !important;
+    touch-action: manipulation !important;
+}
+
+.home-buttons button:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 6px 20px rgba(0, 255, 170, 0.4) !important;
+}
+
+.home-buttons button:active {
+    transform: scale(0.98) !important;
+    box-shadow: 0 2px 8px rgba(0, 255, 170, 0.4) !important;
 }
 
 #mobileNav {
