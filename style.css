@@ -3007,3 +3007,21 @@ table tr:hover {
 .password-requirements li.valid {
     color: #00ffaa;
 }
+
+/* Finance Popup - Center and Middle Override */
+#financePopup {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) scale(0.9) !important;
+    border-radius: 20px !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+#financePopup.active {
+    transform: translate(-50%, -50%) scale(1) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
