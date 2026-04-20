@@ -335,31 +335,38 @@ function saveDailyTasksFromTab() {
         
         // Collect all task data from checkboxes
         const taskCheckboxes = tab.querySelectorAll('.daily-task');
-        const tasks = {};
+        const taskData = {};
+        let totalEXP = 0;
+        let totalCoins = 0;
         
         taskCheckboxes.forEach(checkbox => {
-            const category = checkbox.dataset.category;
-            const taskName = checkbox.dataset.task;
+            // Get task text from label
+            const label = checkbox.parentElement;
+            const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
             
-            if (!tasks[category]) {
-                tasks[category] = [];
-            }
+            // Get EXP and coins from data attributes
+            const exp = parseInt(checkbox.dataset.exp) || 0;
+            const coins = parseInt(checkbox.dataset.coins) || 0;
             
+            // Store task completion status
+            taskData[taskText] = checkbox.checked;
+            
+            // Add to totals if checked
             if (checkbox.checked) {
-                tasks[category].push(taskName);
+                totalEXP += exp;
+                totalCoins += coins;
             }
         });
         
+        // Add totals to task data
+        taskData.totalEXP = totalEXP;
+        taskData.totalCoins = totalCoins;
+        taskData.date = dateKey;
+        taskData.timestamp = new Date().toISOString();
+        
         // Save to Firebase
         const userPath = getCurrentUserPath();
-        const taskPath = `${userPath}/tasks/${dateKey}`;
-        
-        const taskData = {
-            tasks: tasks,
-            date: dateKey,
-            timestamp: new Date().toISOString(),
-            completed: Object.keys(tasks).reduce((total, category) => total + tasks[category].length, 0)
-        };
+        const taskPath = `${userPath}/dailyTasks/${dateKey}`;
         
         firebaseSet(taskPath, taskData)
             .then(() => {
