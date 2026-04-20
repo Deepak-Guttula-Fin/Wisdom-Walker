@@ -3009,7 +3009,7 @@ table tr:hover {
 }
 
 /* Finance Popup - Center and Middle Override */
-#financePopup {
+body #financePopup {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
@@ -3018,10 +3018,12 @@ table tr:hover {
     opacity: 0 !important;
     visibility: hidden !important;
     transition: all 0.3s ease !important;
+    bottom: auto !important;
 }
 
-#financePopup.active {
+body #financePopup.active {
     transform: translate(-50%, -50%) scale(1) !important;
     opacity: 1 !important;
     visibility: visible !important;
+    bottom: auto !important;
 }
