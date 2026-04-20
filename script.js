@@ -1280,54 +1280,49 @@ function updateTotalCoins() {
 // ─── USER SYSTEM ──────────────────────────────────────────────────────────────
 
 function checkUser() {
-    // Check if Firebase Auth is available
+    // Always show login interface on app launch
+    currentUser = null;
+    
+    // Hide all main screens
+    document.getElementById("homeScreen").classList.add("hidden");
+    document.getElementById("taskApp").classList.add("hidden");
+    document.getElementById("financeApp").classList.add("hidden");
+    
+    // Clear any stored session data to force login
+    localStorage.removeItem('userUid');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    
+    // Show login popup
+    showLogin();
+}
+
+// Logout function to force login on next visit
+function logoutUser() {
+    // Clear Firebase session if available
     if (typeof firebase !== 'undefined' && firebase.auth) {
-        // Set up auth state observer
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                currentUser = user;
-                localStorage.setItem('userUid', user.uid);
-                localStorage.setItem('userEmail', user.email);
-                localStorage.setItem('userName', user.displayName || user.email.split('@')[0]);
-                
-                // Update UI
-                document.getElementById("greeting").innerText = "Hello, " + (user.displayName || user.email.split('@')[0]) + "!";
-                document.getElementById("userName").innerText = (user.displayName || user.email.split('@')[0]).toUpperCase();
-                document.getElementById("homeScreen").classList.remove("hidden");
-                
-                // Load user data
-                loadUserData();
-            } else {
-                // User is signed out - show login
-                currentUser = null;
-                localStorage.removeItem('userUid');
-                localStorage.removeItem('userEmail');
-                localStorage.removeItem('userName');
-                
-                // Hide all main screens
-                document.getElementById("homeScreen").classList.add("hidden");
-                document.getElementById("taskApp").classList.add("hidden");
-                document.getElementById("financeApp").classList.add("hidden");
-                
-                // Show login popup
-                showLogin();
-            }
+        firebase.auth().signOut().then(() => {
+            console.log('User signed out from Firebase');
+        }).catch((error) => {
+            console.error('Error signing out from Firebase:', error);
         });
-    } else {
-        // Fallback to old system if Firebase not available
-        let user = JSON.parse(localStorage.getItem("user"));
-        if (user && user.name) {
-            currentUser = user;
-            document.getElementById("greeting").innerText = "Hello, " + user.name + "!";
-            document.getElementById("userName").innerText = user.name.toUpperCase();
-            document.getElementById("homeScreen").classList.remove("hidden");
-        } else {
-            document.getElementById("userPopup").classList.remove("hidden");
-            document.getElementById("overlay").classList.remove("hidden");
-            document.body.classList.add("modal-open");
-        }
     }
+    
+    // Clear all local storage session data
+    localStorage.removeItem('userUid');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    
+    // Clear current user
+    currentUser = null;
+    
+    // Hide all main screens
+    document.getElementById("homeScreen").classList.add("hidden");
+    document.getElementById("taskApp").classList.add("hidden");
+    document.getElementById("financeApp").classList.add("hidden");
+    
+    // Show login interface
+    showLogin();
 }
 
 function saveUser() {
