@@ -928,8 +928,13 @@ body.modal-open #settingsPanel {
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     z-index: 1001;
     min-width: 180px;
-    max-width: 250px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow-y: auto;
     animation: slideUp 0.3s ease;
+    /* Ensure it stays within viewport */
+    margin: 0;
+    box-sizing: border-box;
 }
 
 #settingsPanel h3 {
