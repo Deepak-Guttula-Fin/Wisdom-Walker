@@ -917,10 +917,10 @@ body.modal-open #settingsPanel {
 
 /* Settings Panel - positioned in center and middle */
 #settingsPanel {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     border: 2px solid rgba(102, 126, 234, 0.3);
     border-radius: 15px;
@@ -933,8 +933,11 @@ body.modal-open #settingsPanel {
     overflow-y: auto;
     animation: slideUp 0.3s ease;
     /* Ensure it stays within viewport */
-    margin: 0;
+    margin: 0 !important;
     box-sizing: border-box;
+    /* Override any conflicting positioning */
+    bottom: auto !important;
+    right: auto !important;
 }
 
 #settingsPanel h3 {
