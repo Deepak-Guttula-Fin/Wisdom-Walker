@@ -869,6 +869,12 @@ function openTasks() {
         document.getElementById("homeScreen").classList.add("hidden");
         document.getElementById("taskApp").classList.remove("hidden");
 
+        // Ensure calendar and chart elements are visible
+        document.getElementById("calendar").style.display = "grid";
+        document.getElementById("calendarHeader").style.display = "flex";
+        document.getElementById("calendarDays").style.display = "grid";
+        document.getElementById("chart").style.display = "block";
+
         // Update user name display
         let user = JSON.parse(localStorage.getItem("user"));
         if (user && user.name) {
@@ -1221,16 +1227,53 @@ function updateTotalCoins() {
 // ─── USER SYSTEM ──────────────────────────────────────────────────────────────
 
 function checkUser() {
-    // For now, we'll check localStorage for existing user data
-    // In a real app, you'd use Firebase Auth for authentication
-    let user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user) {
-        // First time user - show welcome popup first
-        showWelcome();
+    // Check if Firebase Auth is available
+    if (typeof firebase !== 'undefined' && firebase.auth) {
+        // Set up auth state observer
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                currentUser = user;
+                localStorage.setItem('userUid', user.uid);
+                localStorage.setItem('userEmail', user.email);
+                localStorage.setItem('userName', user.displayName || user.email.split('@')[0]);
+                
+                // Update UI
+                document.getElementById("greeting").innerText = "Hello, " + (user.displayName || user.email.split('@')[0]) + "!";
+                document.getElementById("userName").innerText = (user.displayName || user.email.split('@')[0]).toUpperCase();
+                document.getElementById("homeScreen").classList.remove("hidden");
+                
+                // Load user data
+                loadUserData();
+            } else {
+                // User is signed out - show login
+                currentUser = null;
+                localStorage.removeItem('userUid');
+                localStorage.removeItem('userEmail');
+                localStorage.removeItem('userName');
+                
+                // Hide all main screens
+                document.getElementById("homeScreen").classList.add("hidden");
+                document.getElementById("taskApp").classList.add("hidden");
+                document.getElementById("financeApp").classList.add("hidden");
+                
+                // Show login popup
+                showLogin();
+            }
+        });
     } else {
-        currentUser = user;
-        greetUser(user);
+        // Fallback to old system if Firebase not available
+        let user = JSON.parse(localStorage.getItem("user"));
+        if (user && user.name) {
+            currentUser = user;
+            document.getElementById("greeting").innerText = "Hello, " + user.name + "!";
+            document.getElementById("userName").innerText = user.name.toUpperCase();
+            document.getElementById("homeScreen").classList.remove("hidden");
+        } else {
+            document.getElementById("userPopup").classList.remove("hidden");
+            document.getElementById("overlay").classList.remove("hidden");
+            document.body.classList.add("modal-open");
+        }
     }
 }
 
@@ -2689,9 +2732,522 @@ function toggleMobileMenu() {
     
     if (mobileNav.classList.contains('active')) {
         mobileNav.classList.remove('active');
-        mobileMenuBtn.innerHTML = '☰';
+        mobileMenuBtn.innerHTML = '??';
     } else {
         mobileNav.classList.add('active');
-        mobileMenuBtn.innerHTML = '✕';
+        mobileMenuBtn.innerHTML = '??';
+    }
+}
+
+// Close mobile menu when clicking outside
+document.addEventListener("click", function(event) {
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    
+    if (mobileNav && mobileNav.classList.contains('active')) {
+        const isClickInsideNav = mobileNav.contains(event.target);
+        const isClickOnMenuBtn = mobileMenuBtn.contains(event.target);
+        
+        if (!isClickInsideNav && !isClickOnMenuBtn) {
+            toggleMobileMenu();
+        }
+    }
+});
+
+// AUTHENTICATION FUNCTIONS
+
+// Show login popup
+function showLogin() {
+    hideAllPopups();
+    document.getElementById('loginPopup').classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Auto-focus email field
+    setTimeout(() => {
+        document.getElementById('loginEmail').focus();
+    }, 100);
+}
+
+// Show signup popup
+function showSignup() {
+    hideAllPopups();
+    document.getElementById('signupPopup').classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Auto-focus name field
+    setTimeout(() => {
+        document.getElementById('signupName').focus();
+    }, 100);
+}
+
+// Show forgot password popup
+function showForgotPassword() {
+    hideAllPopups();
+    document.getElementById('forgotPasswordPopup').classList.remove('hidden');
+    document.getElementById('overlay').classList.remove('hidden');
+    document.body.classList.add('modal-open');
+    
+    // Auto-focus email field
+    setTimeout(() => {
+        document.getElementById('resetEmail').focus();
+    }, 100);
+}
+
+// Hide all popups
+function hideAllPopups() {
+    document.getElementById('loginPopup').classList.add('hidden');
+    document.getElementById('signupPopup').classList.add('hidden');
+    document.getElementById('forgotPasswordPopup').classList.add('hidden');
+    document.getElementById('userPopup').classList.add('hidden');
+    document.getElementById('welcomePopup').classList.add('hidden');
+}
+
+// Login user
+function loginUser() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    // Validation
+    if (!email || !password) {
+        alert('Please enter both email and password');
+        return;
+    }
+    
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Show loading state
+    const loginBtn = document.querySelector('.login-btn');
+    const originalText = loginBtn.textContent;
+    loginBtn.textContent = 'Signing in...';
+    loginBtn.disabled = true;
+    
+    // Firebase authentication
+    firebase.auth().signInWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log('User logged in:', user);
+            
+            // Save user session
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userUid', user.uid);
+            localStorage.setItem('userName', user.displayName || email.split('@')[0]);
+            
+            // Update global user variable
+            currentUser = user;
+            
+            // Load user data
+            loadUserData();
+            
+            // Close login popup
+            hideAllPopups();
+            document.getElementById('overlay').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            
+            // Show success message
+            showNotification('Welcome back! Your data has been loaded.', 'success');
+        })
+        .catch((error) => {
+            console.error('Login error:', error);
+            let errorMessage = 'Login failed. Please try again.';
+            
+            switch(error.code) {
+                case 'auth/user-not-found':
+                    errorMessage = 'No account found with this email.';
+                    break;
+                case 'auth/wrong-password':
+                    errorMessage = 'Incorrect password.';
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = 'Invalid email address.';
+                    break;
+                case 'auth/user-disabled':
+                    errorMessage = 'Account has been disabled.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Too many failed attempts. Please try again later.';
+                    break;
+            }
+            
+            alert(errorMessage);
+            loginBtn.textContent = originalText;
+            loginBtn.disabled = false;
+        });
+}
+
+// Create new account
+function createAccount() {
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('signupConfirmPassword').value;
+    
+    // Validation
+    if (!name || !email || !password || !confirmPassword) {
+        alert('Please fill in all fields');
+        return;
+    }
+    
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    if (password.length < 8) {
+        alert('Password must be at least 8 characters long');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('Passwords do not match');
+        return;
+    }
+    
+    if (!validatePassword(password)) {
+        alert('Password must contain at least 8 characters, one uppercase letter, and one number');
+        return;
+    }
+    
+    // Show loading state
+    const signupBtn = document.querySelector('.signup-btn');
+    const originalText = signupBtn.textContent;
+    signupBtn.textContent = 'Creating account...';
+    signupBtn.disabled = true;
+    
+    // Firebase authentication
+    firebase.auth().createUserWithEmailAndPassword(email, password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            console.log('User created:', user);
+            
+            // Update display name
+            return user.updateProfile({
+                displayName: name
+            });
+        })
+        .then(() => {
+            // Save user session
+            localStorage.setItem('userEmail', email);
+            localStorage.setItem('userUid', user.uid);
+            localStorage.setItem('userName', name);
+            
+            // Update global user variable
+            currentUser = user;
+            
+            // Initialize user data in Firebase
+            initializeUserData();
+            
+            // Close signup popup
+            hideAllPopups();
+            document.getElementById('overlay').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+            
+            // Show success message
+            showNotification('Account created successfully! Welcome to Wisdom Walker.', 'success');
+            
+            // Show welcome screen
+            document.getElementById('homeScreen').classList.remove('hidden');
+        })
+        .catch((error) => {
+            console.error('Signup error:', error);
+            let errorMessage = 'Account creation failed. Please try again.';
+            
+            switch(error.code) {
+                case 'auth/email-already-in-use':
+                    errorMessage = 'An account with this email already exists.';
+                    break;
+                case 'auth/invalid-email':
+                    errorMessage = 'Invalid email address.';
+                    break;
+                case 'auth/weak-password':
+                    errorMessage = 'Password is too weak. Please choose a stronger password.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Too many requests. Please try again later.';
+                    break;
+            }
+            
+            alert(errorMessage);
+            signupBtn.textContent = originalText;
+            signupBtn.disabled = false;
+        });
+}
+
+// Send password reset email
+function sendPasswordReset() {
+    const email = document.getElementById('resetEmail').value.trim();
+    
+    if (!email) {
+        alert('Please enter your email address');
+        return;
+    }
+    
+    if (!validateEmail(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    
+    // Show loading state
+    const resetBtn = document.querySelector('.reset-btn');
+    const originalText = resetBtn.textContent;
+    resetBtn.textContent = 'Sending...';
+    resetBtn.disabled = true;
+    
+    firebase.auth().sendPasswordResetEmail(email)
+        .then(() => {
+            alert('Password reset email sent! Please check your inbox.');
+            hideAllPopups();
+            document.getElementById('overlay').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        })
+        .catch((error) => {
+            console.error('Password reset error:', error);
+            let errorMessage = 'Failed to send reset email. Please try again.';
+            
+            switch(error.code) {
+                case 'auth/invalid-email':
+                    errorMessage = 'Invalid email address.';
+                    break;
+                case 'auth/user-not-found':
+                    errorMessage = 'No account found with this email.';
+                    break;
+                case 'auth/too-many-requests':
+                    errorMessage = 'Too many requests. Please try again later.';
+                    break;
+            }
+            
+            alert(errorMessage);
+            resetBtn.textContent = originalText;
+            resetBtn.disabled = false;
+        });
+}
+
+// Email validation
+function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Password validation
+function validatePassword(password) {
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasMinLength = password.length >= 8;
+    
+    return hasUppercase && hasNumber && hasMinLength;
+}
+
+// Update password requirements UI
+function updatePasswordRequirements() {
+    const password = document.getElementById('signupPassword').value;
+    const lengthReq = document.getElementById('lengthReq');
+    const uppercaseReq = document.getElementById('uppercaseReq');
+    const numberReq = document.getElementById('numberReq');
+    
+    // Check each requirement
+    if (password.length >= 8) {
+        lengthReq.classList.add('valid');
+    } else {
+        lengthReq.classList.remove('valid');
+    }
+    
+    if (/[A-Z]/.test(password)) {
+        uppercaseReq.classList.add('valid');
+    } else {
+        uppercaseReq.classList.remove('valid');
+    }
+    
+    if (/\d/.test(password)) {
+        numberReq.classList.add('valid');
+    } else {
+        numberReq.classList.remove('valid');
+    }
+}
+
+// Initialize user data in Firebase
+function initializeUserData() {
+    const userPath = getCurrentUserPath();
+    
+    // Initialize user data structure
+    const initialData = {
+        tasks: {},
+        finance: [],
+        settings: {
+            theme: 'dark',
+            notifications: true
+        },
+        createdAt: new Date().toISOString()
+    };
+    
+    firebaseSet(userPath, initialData)
+        .then(() => {
+            console.log('User data initialized');
+        })
+        .catch((error) => {
+            console.error('Error initializing user data:', error);
+        });
+}
+
+// Load user data
+function loadUserData() {
+    // Load all user-specific data
+    renderCalendar();
+    drawGraph();
+    updateTotalCoins();
+    updateExperienceBar();
+    loadHistory();
+    calculateFinance();
+    renderSummaryTable();
+    renderExpenseTable();
+    renderFinanceLedger();
+    drawFinanceChart();
+    drawExpensesChart();
+    drawSIPChart();
+    
+    // Update UI with user info
+    updateUserInfo();
+}
+
+// Update user info display
+function updateUserInfo() {
+    const userName = localStorage.getItem('userName') || 'User';
+    const userEmail = localStorage.getItem('userEmail') || '';
+    
+    // Update displays
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) {
+        userNameElement.textContent = userName.toUpperCase();
+    }
+    
+    // Update greeting
+    const greetingElement = document.getElementById('greeting');
+    if (greetingElement) {
+        greetingElement.textContent = `Hello, ${userName}!`;
+    }
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#00ffaa' : '#ff6b6b'};
+        color: ${type === 'success' ? 'black' : 'white'};
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 5000);
+}
+
+// Add event listeners for password requirements
+document.addEventListener('DOMContentLoaded', function() {
+    const signupPassword = document.getElementById('signupPassword');
+    if (signupPassword) {
+        signupPassword.addEventListener('input', updatePasswordRequirements);
+    }
+});
+
+// Add CSS animations for notifications
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// CSV Download Functionality
+function downloadTableCSV(tableId, filename) {
+    try {
+        const table = document.getElementById(tableId);
+        if (!table) {
+            console.error('Table not found:', tableId);
+            alert('Table not found. Please try again.');
+            return;
+        }
+
+        let csv = [];
+        
+        // Get table headers
+        const headers = table.querySelectorAll('thead th');
+        const headerRow = [];
+        headers.forEach(header => {
+            headerRow.push(header.textContent.trim());
+        });
+        csv.push(headerRow.join(','));
+
+        // Get table rows
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const rowData = [];
+            const cells = row.querySelectorAll('td');
+            cells.forEach(cell => {
+                // Clean cell data and handle commas
+                let cellData = cell.textContent.trim();
+                if (cellData.includes(',')) {
+                    cellData = `"${cellData}"`;
+                }
+                rowData.push(cellData);
+            });
+            csv.push(rowData.join(','));
+        });
+
+        // Create CSV blob
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        
+        // Create download link
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        // Generate filename with date
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+        const fullFilename = `${filename}_${dateStr}.csv`;
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', fullFilename);
+        link.style.visibility = 'hidden';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        showNotification(`${filename} downloaded successfully!`, 'success');
+        
+    } catch (error) {
+        console.error('Error downloading CSV:', error);
+        alert('Error downloading CSV. Please try again.');
     }
 }
