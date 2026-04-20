@@ -3337,7 +3337,46 @@ function addTouchSupport() {
 // Initialize touch support when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     addTouchSupport();
+    fixInputFocusIssues();
 });
+
+// Fix input focus issues that block other interactions
+function fixInputFocusIssues() {
+    // Prevent input focus from blocking other clicks in login forms
+    const loginInputs = document.querySelectorAll('#loginPopup input, #signupPopup input, #forgotPasswordPopup input');
+    
+    loginInputs.forEach(input => {
+        input.addEventListener('focus', function(e) {
+            console.log('Input focused, ensuring other elements remain clickable');
+            // Ensure all buttons remain clickable
+            const buttons = document.querySelectorAll('#loginPopup button, #signupPopup button, #forgotPasswordPopup button');
+            buttons.forEach(button => {
+                button.style.pointerEvents = 'auto';
+                button.style.zIndex = '1002';
+                button.style.position = 'relative';
+            });
+        });
+        
+        input.addEventListener('blur', function(e) {
+            console.log('Input blurred');
+        });
+        
+        // Prevent input from capturing all events
+        input.addEventListener('click', function(e) {
+            e.stopPropagation();
+            console.log('Input clicked');
+        });
+    });
+    
+    // Ensure buttons are always clickable
+    const loginButtons = document.querySelectorAll('#loginPopup button, #signupPopup button, #forgotPasswordPopup button');
+    loginButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            console.log('Login button clicked:', e.target.textContent);
+            e.stopPropagation();
+        });
+    });
+}
 
 // Load user data
 function loadUserData() {

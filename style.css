@@ -874,6 +874,29 @@ body.modal-open .forgot-container {
     pointer-events: auto !important;
 }
 
+/* Ensure input fields don't block other interactions */
+body.modal-open .login-container *,
+body.modal-open .signup-container *,
+body.modal-open .forgot-container * {
+    pointer-events: auto !important;
+}
+
+/* Fix focus management - prevent input focus from blocking clicks */
+.login-container:focus-within,
+.signup-container:focus-within,
+.forgot-container:focus-within {
+    pointer-events: auto !important;
+}
+
+/* Ensure buttons remain clickable when inputs are focused */
+.login-container:focus-within button,
+.signup-container:focus-within button,
+.forgot-container:focus-within button {
+    pointer-events: auto !important;
+    z-index: 1002 !important;
+    position: relative !important;
+}
+
 /* Progress History Table - Adjusted Width */
 #historyPanel {
     max-width: 98vw;
