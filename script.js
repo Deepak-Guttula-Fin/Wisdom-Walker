@@ -344,12 +344,15 @@ function saveDailyTasksFromTab() {
             const label = checkbox.parentElement;
             const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
             
+            // Sanitize task name for Firebase key (remove invalid characters)
+            const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
+            
             // Get EXP and coins from data attributes
             const exp = parseInt(checkbox.dataset.exp) || 0;
             const coins = parseInt(checkbox.dataset.coins) || 0;
             
-            // Store task completion status
-            taskData[taskText] = checkbox.checked;
+            // Store task completion status with sanitized key
+            taskData[sanitizedTaskName] = checkbox.checked;
             
             // Add to totals if checked
             if (checkbox.checked) {
@@ -441,8 +444,11 @@ function loadDailyTasksForTab() {
                             const label = checkbox.parentElement;
                             const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
                             
-                            // Check if task was completed
-                            checkbox.checked = savedData[taskText] || false;
+                            // Sanitize task name to match Firebase keys
+                            const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
+                            
+                            // Check if task was completed (check both sanitized and original for backward compatibility)
+                            checkbox.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
                         });
                         
                         // Load guilt level
