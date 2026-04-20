@@ -930,13 +930,11 @@ function openTasks() {
         document.getElementById("calendarDays").style.display = "grid";
         document.getElementById("chart").style.display = "block";
 
-        // Update user name display
-        let user = JSON.parse(localStorage.getItem("user"));
-        if (user && user.name) {
-            let userNameDisplay = document.getElementById("userName");
-            if (userNameDisplay) {
-                userNameDisplay.innerText = user.name;
-            }
+        // Update user name display with signup name
+        const userName = localStorage.getItem('userName') || 'User';
+        let userNameDisplay = document.getElementById("userName");
+        if (userNameDisplay) {
+            userNameDisplay.innerText = userName.toUpperCase();
         }
 
         // Update daily tasks button with today's date
@@ -1360,7 +1358,11 @@ function saveUser() {
         })
         .catch(error => {
             console.error('Error saving user:', error);
-            alert('Error saving user data. Please try again.');
+            // Fallback to localStorage
+            localStorage.setItem("user", JSON.stringify(user));
+            document.getElementById("userPopup").classList.add("hidden");
+            closeWelcome();
+            greetUser(user);
         });
 }
 
@@ -1369,20 +1371,23 @@ function greetUser(user) {
     let speech = document.getElementById("avatarSpeech");
     let userNameDisplay = document.getElementById("userName");
 
+    // Get the user's name from signup
+    const userName = localStorage.getItem('userName') || user.name || 'User';
+
     // Update user name display in EXP bar container
     if (userNameDisplay) {
-        userNameDisplay.innerText = user.name;
+        userNameDisplay.innerText = userName.toUpperCase();
     }
 
     avatar.classList.remove("hidden");
-    speech.innerText = `Hi ${user.name} 👋\nWhere would you like to go?\n📋 Tasks  or  💰 Finance`;
+    speech.innerText = `Hi ${userName}! Where would you like to go?\n\nTasks  or  Finance`;
 
     setTimeout(() => {
         avatar.classList.add("hidden");
     }, 2500);
 }
 
-// ─── AI CHARACTER - FIX: Toggle chat functionality ────────────────────────────
+// ... (rest of the code remains the same)
 
 function toggleChat() {
     document.getElementById("chatBox").classList.toggle("hidden");
