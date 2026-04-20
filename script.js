@@ -420,38 +420,79 @@ function saveDailyTasksFromTab() {
         
         console.log('Task data being saved:', taskData);
         
-        // Save to Firebase
+        // Save to Firebase or localStorage
         const userPath = getCurrentUserPath();
-        const taskPath = `${userPath}/dailyTasks/${dateKey}`;
         
-        firebaseSet(taskPath, taskData)
-            .then(() => {
-                console.log('Daily tasks saved successfully');
-                
-                // Update calendar
-                renderCalendar();
-                
-                // Update experience and coins
-                updateTotalCoins();
-                updateExperienceBar();
-                
-                // Show success message with guilt info
-                let message = 'Daily tasks saved successfully!';
-                if (guiltLevel) {
-                    message += ` (${guiltLevel} guilt applied)`;
-                }
-                showNotification(message, 'success');
-                
-                // Close the tab after a short delay to show success message
-                setTimeout(() => {
-                    closeDailyTasksTab();
-                }, 1500);
-                
-            })
-            .catch((error) => {
-                console.error('Error saving daily tasks:', error);
-                alert(`Error saving tasks: ${error.message}`);
-            });
+        if (userPath && currentUser) {
+            // Save to Firebase
+            const taskPath = `${userPath}/dailyTasks/${dateKey}`;
+            console.log('Saving to Firebase path:', taskPath);
+            
+            firebaseSet(taskPath, taskData)
+                .then(() => {
+                    console.log('Daily tasks saved successfully to Firebase');
+                    
+                    // Update calendar
+                    renderCalendar();
+                    
+                    // Update experience and coins
+                    updateTotalCoins();
+                    updateExperienceBar();
+                    
+                    // Show success message with guilt info
+                    let message = 'Daily tasks saved successfully!';
+                    if (guiltLevel) {
+                        message += ` (${guiltLevel} guilt applied)`;
+                    }
+                    showNotification(message, 'success');
+                    
+                    // Close the tab after a short delay to show success message
+                    setTimeout(() => {
+                        closeDailyTasksTab();
+                    }, 1500);
+                    
+                })
+                .catch((error) => {
+                    console.error('Error saving daily tasks to Firebase:', error);
+                    // Fallback to localStorage
+                    localStorage.setItem(dateKey, JSON.stringify(taskData));
+                    console.log('Fallback: Saved to localStorage');
+                    
+                    // Update UI even if Firebase failed
+                    renderCalendar();
+                    updateTotalCoins();
+                    updateExperienceBar();
+                    
+                    let message = 'Daily tasks saved locally!';
+                    if (guiltLevel) {
+                        message += ` (${guiltLevel} guilt applied)`;
+                    }
+                    showNotification(message, 'success');
+                    
+                    setTimeout(() => {
+                        closeDailyTasksTab();
+                    }, 1500);
+                });
+        } else {
+            // No Firebase user, save to localStorage
+            console.log('No current user, saving to localStorage');
+            localStorage.setItem(dateKey, JSON.stringify(taskData));
+            
+            // Update UI
+            renderCalendar();
+            updateTotalCoins();
+            updateExperienceBar();
+            
+            let message = 'Daily tasks saved locally!';
+            if (guiltLevel) {
+                message += ` (${guiltLevel} guilt applied)`;
+            }
+            showNotification(message, 'success');
+            
+            setTimeout(() => {
+                closeDailyTasksTab();
+            }, 1500);
+        }
             
     } catch (error) {
         console.error('Error in saveDailyTasksFromTab:', error);
@@ -559,7 +600,24 @@ function loadDailyTasksForDate(dateKey) {
                     }
                 });
         } else {
-            console.log('No current user, cannot load tasks');
+            console.log('No current user, loading from localStorage for date:', dateKey);
+            // No Firebase user, try localStorage
+            const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
+            if (Object.keys(localStorageData).length > 0) {
+                console.log('Using localStorage data for date:', dateKey, localStorageData);
+                loadTasksFromData(localStorageData);
+            } else {
+                console.log('No localStorage data found for date:', dateKey);
+                // Clear checkboxes and guilt level
+                const taskCheckboxes = document.querySelectorAll('.daily-task');
+                taskCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                const guiltLevelElement = document.getElementById('guiltLevel');
+                if (guiltLevelElement) {
+                    guiltLevelElement.value = "";
+                }
+            }
         }
     } catch (error) {
         console.error('Error in loadDailyTasksForDate:', error);
