@@ -19,6 +19,93 @@
     <button onclick="closeWelcome()">Let's Start! 🚀</button>
 </div>
 
+<!-- LOGIN INTERFACE -->
+<div id="loginPopup" class="popup hidden">
+    <div class="login-container">
+        <h2>🔐 Welcome Back</h2>
+        <p class="login-subtitle">Sign in to access your saved data</p>
+        
+        <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="Enter your email" autocomplete="email">
+        </div>
+        
+        <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+        </div>
+        
+        <div class="login-actions">
+            <button onclick="loginUser()" class="login-btn">Sign In</button>
+            <button onclick="showSignup()" class="signup-link">Create Account</button>
+        </div>
+        
+        <div class="forgot-password">
+            <a href="#" onclick="showForgotPassword()">Forgot Password?</a>
+        </div>
+    </div>
+</div>
+
+<!-- SIGNUP INTERFACE -->
+<div id="signupPopup" class="popup hidden">
+    <div class="signup-container">
+        <h2>📝 Create Account</h2>
+        <p class="signup-subtitle">Join Wisdom Walker today</p>
+        
+        <div class="form-group">
+            <label for="signupName">Full Name</label>
+            <input type="text" id="signupName" placeholder="Enter your full name" autocomplete="name">
+        </div>
+        
+        <div class="form-group">
+            <label for="signupEmail">Email Address</label>
+            <input type="email" id="signupEmail" placeholder="Enter your email" autocomplete="email">
+        </div>
+        
+        <div class="form-group">
+            <label for="signupPassword">Password</label>
+            <input type="password" id="signupPassword" placeholder="Create a password" autocomplete="new-password">
+        </div>
+        
+        <div class="form-group">
+            <label for="signupConfirmPassword">Confirm Password</label>
+            <input type="password" id="signupConfirmPassword" placeholder="Confirm your password" autocomplete="new-password">
+        </div>
+        
+        <div class="password-requirements">
+            <p>Password must contain:</p>
+            <ul>
+                <li id="lengthReq">At least 8 characters</li>
+                <li id="uppercaseReq">One uppercase letter</li>
+                <li id="numberReq">One number</li>
+            </ul>
+        </div>
+        
+        <div class="signup-actions">
+            <button onclick="createAccount()" class="signup-btn">Create Account</button>
+            <button onclick="showLogin()" class="login-link">Back to Login</button>
+        </div>
+    </div>
+</div>
+
+<!-- FORGOT PASSWORD INTERFACE -->
+<div id="forgotPasswordPopup" class="popup hidden">
+    <div class="forgot-container">
+        <h2>🔑 Reset Password</h2>
+        <p class="forgot-subtitle">Enter your email to receive password reset instructions</p>
+        
+        <div class="form-group">
+            <label for="resetEmail">Email Address</label>
+            <input type="email" id="resetEmail" placeholder="Enter your email">
+        </div>
+        
+        <div class="forgot-actions">
+            <button onclick="sendPasswordReset()" class="reset-btn">Send Reset Email</button>
+            <button onclick="showLogin()" class="back-link">Back to Login</button>
+        </div>
+    </div>
+</div>
+
 <!-- 👤 FIRST TIME USER POPUP -->
 <div id="userPopup" class="popup hidden">
     <h2>👋 Welcome, I am Wisdom Walker</h2>
@@ -31,6 +118,19 @@
     <div class="avatar-quote-container">
         <img src="wisdom walker.png" id="centerAvatarImg">
         <div id="avatarSpeech"></div>
+    </div>
+</div>
+
+<!-- MOBILE MENU BUTTON -->
+<button id="mobileMenuBtn" onclick="toggleMobileMenu()">☰</button>
+
+<!-- MOBILE NAVIGATION OVERLAY -->
+<div id="mobileNav">
+    <button class="mobile-close-btn" onclick="toggleMobileMenu()">×</button>
+    <div class="mobile-nav-content">
+        <button onclick="openTasks(); toggleMobileMenu()">📝 Tasks Tracker</button>
+        <button onclick="openFinance(); toggleMobileMenu()">💰 Finance Tracker</button>
+        <button onclick="openSettings(); toggleMobileMenu()">⚙️ Settings</button>
     </div>
 </div>
 

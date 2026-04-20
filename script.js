@@ -20,6 +20,7 @@ const firebaseConfig = {
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
+const auth = firebase.auth();
 const analytics = firebase.analytics();
 
 // Firebase Helper Functions
@@ -2678,4 +2679,19 @@ window.onload = function () {
         currentMessageIndex = 0; // Start with first message
     }
     document.body.classList.remove("modal-open");
+}
+
+// ─── MOBILE MENU FUNCTIONS ────────────────────────────────────────────────────
+
+function toggleMobileMenu() {
+    const mobileNav = document.getElementById('mobileNav');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    
+    if (mobileNav.classList.contains('active')) {
+        mobileNav.classList.remove('active');
+        mobileMenuBtn.innerHTML = '☰';
+    } else {
+        mobileNav.classList.add('active');
+        mobileMenuBtn.innerHTML = '✕';
+    }
 }
