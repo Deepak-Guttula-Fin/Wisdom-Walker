@@ -23,6 +23,25 @@ const database = firebase.database();
 const auth = firebase.auth();
 const analytics = firebase.analytics();
 
+// Check if Firebase Auth is properly configured
+auth.onAuthStateChanged((user) => {
+    if (user) {
+        console.log('Firebase Auth is working, user:', user);
+    } else {
+        console.log('Firebase Auth is working, no user signed in');
+    }
+}, (error) => {
+    console.error('Firebase Auth configuration error:', error);
+    if (error.code === 'auth/configuration-not-found') {
+        console.warn('Firebase Authentication is not enabled in the project settings.');
+        console.warn('Please enable Authentication in Firebase Console:');
+        console.warn('1. Go to Firebase Console');
+        console.warn('2. Select project: wisdomwalker-40e63');
+        console.warn('3. Go to Authentication > Sign-in method');
+        console.warn('4. Enable Email/Password sign-in');
+    }
+});
+
 // Firebase Helper Functions
 function firebaseSet(path, data) {
     return database.ref(path).set(data);
@@ -2828,6 +2847,14 @@ function loginUser() {
     loginBtn.textContent = 'Signing in...';
     loginBtn.disabled = true;
     
+    // Check if Firebase Auth is properly configured
+    if (typeof firebase === 'undefined' || !firebase.auth) {
+        alert('Firebase is not properly loaded. Please refresh the page and try again.');
+        loginBtn.textContent = originalText;
+        loginBtn.disabled = false;
+        return;
+    }
+    
     // Firebase authentication
     firebase.auth().signInWithEmailAndPassword(email, password)
         .then((userCredential) => {
@@ -2872,6 +2899,9 @@ function loginUser() {
                     break;
                 case 'auth/too-many-requests':
                     errorMessage = 'Too many failed attempts. Please try again later.';
+                    break;
+                case 'auth/configuration-not-found':
+                    errorMessage = 'Firebase Authentication is not configured. Please enable Authentication in Firebase Console:\n\n1. Go to Firebase Console\n2. Select project: wisdomwalker-40e63\n3. Go to Authentication > Sign-in method\n4. Enable Email/Password sign-in\n5. Try again';
                     break;
             }
             
