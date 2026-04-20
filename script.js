@@ -1800,7 +1800,8 @@ function saveFinance() {
         entryDateTime: new Date().toISOString()  // Record when entry was made
     };
 
-    if (currentUser) {
+    // Check if Firebase is properly initialized and user is logged in
+    if (typeof firebase !== 'undefined' && firebase.auth && currentUser) {
         // Save to Firebase
         firebaseGet(getCurrentUserPath('finance'))
             .then(data => {
@@ -1839,7 +1840,7 @@ function saveFinance() {
                 renderEntriesLog();
             });
     } else {
-        // Fallback to localStorage if no current user
+        // Fallback to localStorage if no current user or Firebase not ready
         let data = JSON.parse(localStorage.getItem("finance")) || [];
         data.unshift(entry);
         localStorage.setItem("finance", JSON.stringify(data));
@@ -1943,7 +1944,8 @@ function renderDetailedTable() {
 function calculateFinance() {
     let data = [];
     
-    if (currentUser) {
+    // Check if Firebase is properly initialized
+    if (typeof firebase !== 'undefined' && firebase.auth && currentUser) {
         // Try to get data from Firebase first
         firebaseGet(getCurrentUserPath('finance'))
             .then(financeData => {
@@ -1957,7 +1959,7 @@ function calculateFinance() {
                 updateFinanceUI(data);
             });
     } else {
-        // Fallback to localStorage if no current user
+        // Fallback to localStorage if no current user or Firebase not ready
         data = JSON.parse(localStorage.getItem("finance")) || [];
         updateFinanceUI(data);
     }
