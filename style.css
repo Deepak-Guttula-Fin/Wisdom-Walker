@@ -838,6 +838,9 @@ body.modal-open.daily-tasks-open #financeApp {
         filter: none !important;
         pointer-events: auto !important;
     }
+
+/* Tab header styling */
+.tab-3d-header {
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 15px;

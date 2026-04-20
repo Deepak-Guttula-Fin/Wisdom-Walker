@@ -387,6 +387,10 @@ function saveDailyTasksFromTab() {
         let guiltCoinPenalty = 0;
         let guiltEXPPenalty = 0;
         
+        console.log('Guilt level selected:', guiltLevel);
+        console.log('Total EXP before guilt:', totalEXP);
+        console.log('Total Coins before guilt:', totalCoins);
+        
         if (guiltLevel === 'low') {
             guiltCoinPenalty = 5;
             guiltEXPPenalty = 20;
@@ -398,9 +402,14 @@ function saveDailyTasksFromTab() {
             guiltEXPPenalty = 60;
         }
         
+        console.log('Guilt penalties - Coins:', guiltCoinPenalty, 'EXP:', guiltEXPPenalty);
+        
         // Apply guilt penalties with non-negative calculation
         const finalCoins = Math.max(0, totalCoins - guiltCoinPenalty);
         const finalEXP = Math.max(0, totalEXP - guiltEXPPenalty);
+        
+        console.log('Final EXP after guilt:', finalEXP);
+        console.log('Final Coins after guilt:', finalCoins);
         
         // Add totals and guilt data to task data
         taskData.totalEXP = finalEXP;
@@ -408,6 +417,8 @@ function saveDailyTasksFromTab() {
         taskData.guiltLevel = guiltLevel;
         taskData.date = dateKey;
         taskData.timestamp = new Date().toISOString();
+        
+        console.log('Task data being saved:', taskData);
         
         // Save to Firebase
         const userPath = getCurrentUserPath();
@@ -490,12 +501,18 @@ function loadDailyTasksForTab() {
 
 function loadDailyTasksForDate(dateKey) {
     try {
+        console.log('Loading tasks for date:', dateKey);
+        
         if (currentUser) {
             firebaseGet(getCurrentUserPath(`dailyTasks/${dateKey}`))
                 .then(savedData => {
+                    console.log('Data received for date:', dateKey, savedData);
+                    
                     if (savedData) {
                         // Load tasks into checkboxes using original format
                         const taskCheckboxes = document.querySelectorAll('.daily-task');
+                        console.log('Found task checkboxes:', taskCheckboxes.length);
+                        
                         taskCheckboxes.forEach(checkbox => {
                             // Get task text from label
                             const label = checkbox.parentElement;
@@ -506,6 +523,7 @@ function loadDailyTasksForDate(dateKey) {
                             
                             // Check if task was completed (check both sanitized and original for backward compatibility)
                             checkbox.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
+                            console.log('Task:', taskText, 'Checked:', checkbox.checked);
                         });
                         
                         // Load guilt level
@@ -513,8 +531,10 @@ function loadDailyTasksForDate(dateKey) {
                         const guiltLevelElement = document.getElementById('guiltLevel');
                         if (guiltLevelElement) {
                             guiltLevelElement.value = guiltLevel;
+                            console.log('Loaded guilt level:', guiltLevel);
                         }
                     } else {
+                        console.log('No data found for date:', dateKey);
                         // If no data exists, clear all checkboxes and guilt level
                         const taskCheckboxes = document.querySelectorAll('.daily-task');
                         taskCheckboxes.forEach(checkbox => {
@@ -538,6 +558,8 @@ function loadDailyTasksForDate(dateKey) {
                         guiltLevelElement.value = "";
                     }
                 });
+        } else {
+            console.log('No current user, cannot load tasks');
         }
     } catch (error) {
         console.error('Error in loadDailyTasksForDate:', error);
@@ -945,6 +967,7 @@ function calculateStreaks() {
     // This is a simplified streak calculation
     // In a full implementation, we would track consecutive days and calculate bonuses
     dailyStreak = 1; // Placeholder
+}
 
 // ─── OPEN DAY ─────────────────────────────────────────────────
 
