@@ -3325,11 +3325,21 @@ function addTouchSupport() {
         }
     }
     
-    // Prevent zoom on double tap for buttons
+    // Prevent zoom on double tap for buttons (but allow normal clicks)
     const interactiveElements = document.querySelectorAll('button, input, .day, .home-btn');
     interactiveElements.forEach(element => {
+        let lastTouchEnd = 0;
         element.addEventListener('touchend', function(e) {
-            e.preventDefault();
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTouchEnd;
+            if (tapLength < 500 && tapLength > 0) {
+                // This is a double tap - prevent zoom
+                e.preventDefault();
+            } else {
+                // This is a single tap - allow click to proceed
+                // Don't prevent default so click events fire
+            }
+            lastTouchEnd = currentTime;
         });
     });
 }
@@ -3338,6 +3348,7 @@ function addTouchSupport() {
 document.addEventListener('DOMContentLoaded', function() {
     addTouchSupport();
     fixInputFocusIssues();
+    fixTouchEvents();
 });
 
 // Fix input focus issues that block other interactions
@@ -3375,6 +3386,57 @@ function fixInputFocusIssues() {
             console.log('Login button clicked:', e.target.textContent);
             e.stopPropagation();
         });
+    });
+}
+
+// Fix touch events for mobile devices
+function fixTouchEvents() {
+    console.log('Setting up touch event fixes...');
+    
+    // Add touch events to all buttons to ensure they work
+    const allButtons = document.querySelectorAll('button');
+    allButtons.forEach(button => {
+        // Add touchstart event
+        button.addEventListener('touchstart', function(e) {
+            console.log('Touch start on button:', e.target.textContent);
+            this.style.transform = 'scale(0.95)';
+        }, { passive: true });
+        
+        // Add touchend event that triggers click
+        button.addEventListener('touchend', function(e) {
+            console.log('Touch end on button:', e.target.textContent);
+            this.style.transform = 'scale(1)';
+            
+            // Trigger the click event
+            setTimeout(() => {
+                const clickEvent = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                this.dispatchEvent(clickEvent);
+            }, 50);
+        }, { passive: true });
+        
+        // Add touchcancel event
+        button.addEventListener('touchcancel', function(e) {
+            console.log('Touch cancel on button:', e.target.textContent);
+            this.style.transform = 'scale(1)';
+        }, { passive: true });
+    });
+    
+    // Also fix input fields
+    const allInputs = document.querySelectorAll('input');
+    allInputs.forEach(input => {
+        input.addEventListener('touchstart', function(e) {
+            console.log('Touch start on input');
+        }, { passive: true });
+        
+        input.addEventListener('touchend', function(e) {
+            console.log('Touch end on input');
+            // Focus the input on touch
+            this.focus();
+        }, { passive: true });
     });
 }
 
