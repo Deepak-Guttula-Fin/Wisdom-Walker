@@ -236,7 +236,11 @@ function renderCalendar() {
                 div.style.border = "1px solid #444";
             }
 
-            div.onclick = () => openDay(key, year, month, d);
+            div.onclick = () => {
+            console.log('Calendar date clicked:', { key, year, month, day: d });
+            console.log('Calling openDay with parameters:', key, year, month, d);
+            openDay(key, year, month, d);
+        };
             calendar.appendChild(div);
         }
 
@@ -1037,11 +1041,19 @@ function calculateStreaks() {
 // ─── OPEN DAY ─────────────────────────────────────────────────
 
 function openDay(key, year, month, day) {
-    // Open daily tasks tab for any date click
-    openDailyTasksTabForDate(key, year, month, day);
+    console.log('openDay function called with:', { key, year, month, day });
+    try {
+        // Open daily tasks tab for any date click
+        console.log('Calling openDailyTasksTabForDate...');
+        openDailyTasksTabForDate(key, year, month, day);
+        console.log('openDailyTasksTabForDate call completed');
+    } catch (error) {
+        console.error('Error in openDay:', error);
+    }
 }
 
 function openDailyTasksTabForDate(key, year, month, day) {
+    console.log('openDailyTasksTabForDate called with:', { key, year, month, day });
     try {
         // Update button date to show selected date
         const selectedDate = new Date(year, month, day);
@@ -1050,33 +1062,45 @@ function openDailyTasksTabForDate(key, year, month, day) {
             day: '2-digit', 
             year: 'numeric' 
         });
+        console.log('Formatted date:', formattedDate);
         
         // Update button text to show selected date
         const dailyTasksBtn = document.getElementById("dailyTasksBtn");
+        console.log('Daily tasks button found:', !!dailyTasksBtn);
         if (dailyTasksBtn) {
             dailyTasksBtn.innerText = formattedDate;
+            console.log('Button text updated to:', formattedDate);
         }
         
         // Show the tab
         const tab = document.getElementById("dailyTasksTab");
+        console.log('Daily tasks tab found:', !!tab);
         if (tab) {
             tab.classList.remove("hidden");
+            console.log('Tab shown, classes:', tab.className);
         }
         
         // Set the date in the tab header
         const tabDateElement = document.getElementById("tabDate");
+        console.log('Tab date element found:', !!tabDateElement);
         if (tabDateElement) {
             tabDateElement.textContent = formattedDate;
+            console.log('Tab date set to:', formattedDate);
         }
         
         // Load saved tasks for the selected date
+        console.log('Calling loadDailyTasksForDate with key:', key);
         loadDailyTasksForDate(key);
         
         // Add body class to prevent blur
         document.body.classList.add("daily-tasks-open");
+        console.log('Body class added');
         
         // Update experience bar
+        console.log('Updating experience bar');
         updateExperienceBar();
+        
+        console.log('openDailyTasksTabForDate completed successfully');
     } catch (error) {
         console.error('Error opening daily tasks tab for date:', error);
         alert('Error opening daily tasks tab. Please try again.');
