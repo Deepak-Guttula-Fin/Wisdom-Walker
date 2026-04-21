@@ -586,8 +586,36 @@ function loadDailyTasksForDate(dateKey) {
                             console.log('Loaded guilt level:', guiltLevel);
                         }
                     } else {
-                        console.log('No data found for date:', dateKey);
-                        // If no data exists, clear all checkboxes and guilt level
+                        console.log('No Firebase data found for date:', dateKey, 'checking localStorage...');
+                        // Try localStorage as fallback when Firebase returns null
+                        const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
+                        if (Object.keys(localStorageData).length > 0) {
+                            console.log('Found localStorage data for date:', dateKey, localStorageData);
+                            loadTasksFromData(localStorageData);
+                        } else {
+                            console.log('No data found anywhere for date:', dateKey);
+                            // If no data exists, clear all checkboxes and guilt level
+                            const taskCheckboxes = document.querySelectorAll('.daily-task');
+                            taskCheckboxes.forEach(checkbox => {
+                                checkbox.checked = false;
+                            });
+                            const guiltLevelElement = document.getElementById('guiltLevel');
+                            if (guiltLevelElement) {
+                                guiltLevelElement.value = "";
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading daily tasks for date:', error, 'trying localStorage');
+                    // Fallback to localStorage on Firebase error
+                    const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
+                    if (Object.keys(localStorageData).length > 0) {
+                        console.log('Firebase error, using localStorage data for date:', dateKey, localStorageData);
+                        loadTasksFromData(localStorageData);
+                    } else {
+                        console.log('Firebase error and no localStorage data for date:', dateKey);
+                        // Clear checkboxes on error
                         const taskCheckboxes = document.querySelectorAll('.daily-task');
                         taskCheckboxes.forEach(checkbox => {
                             checkbox.checked = false;
@@ -596,18 +624,6 @@ function loadDailyTasksForDate(dateKey) {
                         if (guiltLevelElement) {
                             guiltLevelElement.value = "";
                         }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading daily tasks for date:', error);
-                    // Clear checkboxes on error
-                    const taskCheckboxes = document.querySelectorAll('.daily-task');
-                    taskCheckboxes.forEach(checkbox => {
-                        checkbox.checked = false;
-                    });
-                    const guiltLevelElement = document.getElementById('guiltLevel');
-                    if (guiltLevelElement) {
-                        guiltLevelElement.value = "";
                     }
                 });
         } else {
