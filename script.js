@@ -237,7 +237,6 @@ function renderCalendar() {
             }
 
             div.onclick = () => {
-            alert('Calendar date clicked: ' + key);
             console.log('Calendar date clicked:', { key, year, month, day: d });
             console.log('Calling openDay with parameters:', key, year, month, d);
             openDay(key, year, month, d);
@@ -1060,7 +1059,19 @@ function calculateStreaks() {
 function openDay(key, year, month, day) {
     console.log('openDay function called with:', { key, year, month, day });
     try {
-        // Open daily tasks tab for any date click
+        // Simple test: just show the tab without complex logic
+        const tab = document.getElementById("dailyTasksTab");
+        console.log('Tab element found:', !!tab);
+        if (tab) {
+            tab.classList.remove("hidden");
+            console.log('Tab shown, classes:', tab.className);
+            document.body.classList.add("daily-tasks-open");
+            console.log('Tab should now be visible');
+        } else {
+            console.error('Tab element not found!');
+        }
+        
+        // Also try the complex logic
         console.log('Calling openDailyTasksTabForDate...');
         openDailyTasksTabForDate(key, year, month, day);
         console.log('openDailyTasksTabForDate call completed');
