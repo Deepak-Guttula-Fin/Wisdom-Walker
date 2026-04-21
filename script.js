@@ -237,7 +237,6 @@ function renderCalendar() {
             }
 
             div.onclick = () => {
-            alert('Calendar date clicked: ' + key + ' - openDay will be called');
             console.log('Calendar date clicked:', { key, year, month, day: d });
             console.log('Calling openDay with parameters:', key, year, month, d);
             openDay(key, year, month, d);
@@ -1058,18 +1057,24 @@ function calculateStreaks() {
 // ─── OPEN DAY ─────────────────────────────────────────────────
 
 function openDay(key, year, month, day) {
+    alert('openDay function called with: ' + key);
     console.log('openDay function called with:', { key, year, month, day });
     try {
         // Simple test: just show the tab without complex logic
         const tab = document.getElementById("dailyTasksTab");
         console.log('Tab element found:', !!tab);
+        alert('Tab element found: ' + (!!tab ? 'YES' : 'NO'));
         if (tab) {
+            alert('Tab classes before: ' + tab.className);
             tab.classList.remove("hidden");
             console.log('Tab shown, classes:', tab.className);
+            alert('Tab classes after: ' + tab.className);
             document.body.classList.add("daily-tasks-open");
             console.log('Tab should now be visible');
+            alert('Tab should now be visible');
         } else {
             console.error('Tab element not found!');
+            alert('Tab element not found!');
         }
         
         // Also try the complex logic
@@ -1078,6 +1083,7 @@ function openDay(key, year, month, day) {
         console.log('openDailyTasksTabForDate call completed');
     } catch (error) {
         console.error('Error in openDay:', error);
+        alert('Error in openDay: ' + error.message);
     }
 }
 
