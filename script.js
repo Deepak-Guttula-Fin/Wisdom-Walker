@@ -237,6 +237,7 @@ function renderCalendar() {
             }
 
             div.onclick = () => {
+            alert('Calendar date clicked: ' + key + ' - openDay will be called');
             console.log('Calendar date clicked:', { key, year, month, day: d });
             console.log('Calling openDay with parameters:', key, year, month, d);
             openDay(key, year, month, d);
