@@ -2,13 +2,20 @@
 <html>
 <head>
     <title>Wisdom Walker</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="version" content="2.0.0">
+    <meta name="build-date" content="2026-04-21">
+    <link rel="stylesheet" href="style.css?v=2.0.0&t=20260421">
     <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js?v=2.0.0&t=20260421"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js?v=2.0.0&t=20260421"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js?v=2.0.0&t=20260421"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-analytics-compat.js?v=2.0.0&t=20260421"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js?v=2.0.0&t=20260421"></script>
 </head>
 
 <body>
@@ -22,7 +29,7 @@
 </div>
 
 <!-- LOGIN INTERFACE -->
-<div id="loginPopup" class="popup hidden">
+<div id="loginScreen" class="popup hidden">
     <div class="login-container">
         <h2>🔐 Welcome Back</h2>
         <p class="login-subtitle">Sign in to access your saved data</p>
@@ -197,8 +204,8 @@
     <h3>📈 Monthly Progress</h3>
     <canvas id="chart" style="width: 100%; max-width: 600px; height: 300px; margin: 20px auto; display: block; border-radius: 10px; background: rgba(255, 255, 255, 0.02); padding: 10px; box-sizing: border-box;"></canvas>
 
-    <!-- DAILY TASKS BUTTON -->
-    <button id="dailyTasksBtn" onclick="openDailyTasksTab()">Apr 19, 2026</button>
+    <!-- DATE BUTTON FOR ENTRY TAB -->
+    <button id="dateButton" onclick="openDailyTasksTab()" style="background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; padding: 15px 30px; border-radius: 12px; cursor: pointer; font-weight: bold; margin: 20px auto; display: block; box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3); transition: all 0.3s ease; font-size: 16px; text-transform: uppercase; letter-spacing: 1px;"></button>
 
     <!-- AI CHARACTER -->
     <div id="aiCharacter" onclick="toggleChat()">
@@ -255,7 +262,9 @@
         <button onclick="closePopup()">⬅ Back</button>
     </div>
 
-    <!-- 3D DAILY TASKS TAB -->
+    </div>
+
+<!-- 3D DAILY TASKS TAB -->
     <div id="dailyTasksTab" class="daily-tasks-3d-tab hidden">
         <div class="tab-3d-container">
             <div class="tab-3d-header">
@@ -270,11 +279,11 @@
                 <div class="task-section">
                     <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Physical Health & Fitness</h4>
                     <div class="tasks">
-                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> 🏋️‍♀️ Workout / Gym (20 EXP & 5 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> 💧 Hydration Goal - Minimum 3 liters (10 EXP & 2 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> 😴 Sleep Hygiene - 7-8 hours (10 EXP & 2 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> ❄️ Cold Shower (15 EXP & 3 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2"> 🥗 Healthy Eating - No junk food (10 EXP & 2 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5">  Workout / Gym (20 EXP & 5 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2">  Hydration Goal - Minimum 3 liters (10 EXP & 2 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2">  Sleep Hygiene - 7-8 hours (10 EXP & 2 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3">  Cold Shower (15 EXP & 3 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="10" data-coins="2">  Healthy Eating - No junk food (10 EXP & 2 Coins)</label>
                     </div>
                 </div>
                 
@@ -282,10 +291,10 @@
                 <div class="task-section">
                     <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Learning & Development</h4>
                     <div class="tasks">
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> 📖 Reading Practice (15 EXP & 3 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> 💬 Speaking Practice (20 EXP & 5 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5"> 📝 Writing Practice (20 EXP & 5 Coins)</label>
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> 👂 Listening Practice (15 EXP & 3 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3">  Reading Practice (15 EXP & 3 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5">  Speaking Practice (20 EXP & 5 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="20" data-coins="5">  Writing Practice (20 EXP & 5 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3">  Listening Practice (15 EXP & 3 Coins)</label>
                     </div>
                 </div>
                 
@@ -293,7 +302,7 @@
                 <div class="task-section">
                     <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Financial & Professional</h4>
                     <div class="tasks">
-                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3"> 📊 Portfolio Review - Track investments (15 EXP & 3 Coins)</label>
+                        <label><input type="checkbox" class="daily-task" data-exp="15" data-coins="3">  Portfolio Review - Track investments (15 EXP & 3 Coins)</label>
                     </div>
                 </div>
                 
@@ -309,6 +318,60 @@
                 </div>
                 
                 <button onclick="saveDailyTasksFromTab()" style="background: linear-gradient(135deg, #00ffaa, #00cc88); color: black; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 20px auto; display: block; box-shadow: 0 4px 15px rgba(0, 255, 170, 0.3); transition: all 0.3s ease; font-size: 16px;">Save Tasks</button>
+            </div>
+        </div>
+    </div>
+
+<!-- SUMMARY TAB -->
+<div id="summaryTab" class="summary-3d-tab hidden">
+    <div class="summary-3d-container">
+        <div class="summary-3d-header">
+            <h3 id="summaryDate" style="color: #00ffaa; margin-bottom: 20px; font-size: 20px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);"></h3>
+            <button class="close-tab-btn" onclick="closeSummaryTab()">×</button>
+        </div>
+        
+        <div class="summary-3d-content">
+            <!-- SECTION I: EXP GAINED -->
+            <div class="summary-section">
+                <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">I. EXP Gained</h4>
+                <div class="summary-stat">
+                    <span class="stat-label">Total Experience Points</span>
+                    <span id="summaryEXP" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <!-- SECTION II: COINS COLLECTED -->
+            <div class="summary-section">
+                <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">II. Coins Collected</h4>
+                <div class="summary-stat">
+                    <span class="stat-label">Total Coins Earned</span>
+                    <span id="summaryCoins" class="stat-value">0</span>
+                </div>
+            </div>
+            
+            <!-- SECTION III: ACCOMPLISHED TASKS -->
+            <div class="summary-section">
+                <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">III. Accomplished Tasks</h4>
+                <div id="achievedTasks" class="task-list">
+                    <p style="color: #888;">No tasks completed</p>
+                </div>
+            </div>
+            
+            <!-- SECTION IV: UNACCOMPLISHED TASKS -->
+            <div class="summary-section">
+                <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">IV. Unaccomplished Tasks</h4>
+                <div id="unaccomplishedTasks" class="task-list">
+                    <p style="color: #888;">No tasks recorded</p>
+                </div>
+            </div>
+            
+            <!-- SECTION V: GUILD STATUS -->
+            <div class="summary-section">
+                <h4 style="color: #00ffaa; margin-bottom: 15px; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">V. Guild Status</h4>
+                <div class="summary-stat">
+                    <span class="stat-label">Current Status</span>
+                    <span id="guildStatus" class="stat-value">No Data</span>
+                </div>
             </div>
         </div>
     </div>
@@ -574,7 +637,23 @@
 </div>
 
 <!-- SCRIPTS -->
-<script src="script.js"></script>
+<script>
+// Register Service Worker for cache control
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js?v=2.0.0&t=20260421')
+            .then(function(registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                // Force update check
+                registration.update();
+            })
+            .catch(function(error) {
+                console.log('ServiceWorker registration failed: ', error);
+            });
+    });
+}
+</script>
+<script src="script.js?v=2.0.0&t=20260421"></script>
 
 </body>
 </html>

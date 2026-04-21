@@ -5,6 +5,9 @@ let financeChartInstance = null;
 let expensesChartInstance = null;
 let sipChartInstance = null;
 
+// Global user variable
+let currentUser = null;
+
 // Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyA0jHlmQC1T-F2snigSar1-t-GflwQpJ-8",
@@ -27,8 +30,13 @@ const analytics = firebase.analytics();
 auth.onAuthStateChanged((user) => {
     if (user) {
         console.log('Firebase Auth is working, user:', user);
+        // Set global currentUser variable
+        currentUser = user;
+        console.log('Current user set:', currentUser);
     } else {
         console.log('Firebase Auth is working, no user signed in');
+        // Clear global currentUser variable
+        currentUser = null;
     }
 }, (error) => {
     console.error('Firebase Auth configuration error:', error);
@@ -66,10 +74,11 @@ function getUserPath(userId, path) {
 
 function getCurrentUserPath(path) {
     if (!currentUser) return null;
+    if (!path) return getUserPath(currentUser.uid, '');
     return getUserPath(currentUser.uid, path);
 }
 
-// Helper function to get daily tasks data from Firebase or localStorage
+// Helper function to get daily tasks data from Firebase only
 function getDailyTasksData(dateKey, callback) {
     if (currentUser) {
         firebaseGet(getCurrentUserPath(`dailyTasks/${dateKey}`))
@@ -78,14 +87,11 @@ function getDailyTasksData(dateKey, callback) {
             })
             .catch(error => {
                 console.error('Error getting daily tasks from Firebase:', error);
-                // Fallback to localStorage
-                const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
-                callback(localStorageData);
+                callback({});
             });
     } else {
-        // Fallback to localStorage
-        const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
-        callback(localStorageData);
+        console.error('No Firebase user - cannot get daily tasks');
+        callback({});
     }
 }
 
@@ -104,34 +110,11 @@ function getAllDailyTasks(callback) {
             })
             .catch(error => {
                 console.error('Error getting all daily tasks from Firebase:', error);
-                // Fallback to localStorage
-                const localStorageData = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    let key = localStorage.key(i);
-                    if (key !== "user" && key !== "finance" && !key.includes('entriesLog')) {
-                        try {
-                            localStorageData[key] = JSON.parse(localStorage.getItem(key));
-                        } catch {
-                            continue;
-                        }
-                    }
-                }
-                callback(localStorageData);
+                callback({});
             });
     } else {
-        // Fallback to localStorage
-        const localStorageData = {};
-        for (let i = 0; i < localStorage.length; i++) {
-            let key = localStorage.key(i);
-            if (key !== "user" && key !== "finance" && !key.includes('entriesLog')) {
-                try {
-                    localStorageData[key] = JSON.parse(localStorage.getItem(key));
-                } catch {
-                    continue;
-                }
-            }
-        }
-        callback(localStorageData);
+        console.error('No Firebase user - cannot load daily tasks');
+        callback({});
     }
 }
 
@@ -145,7 +128,6 @@ let todayCoins = 0;
 let guiltPenalty = 0;
 let avatarMessages = [];
 let currentMessageIndex = 0;
-let currentUser = null;
 
 // ─── CALENDAR ─────────────────────────────────────────────────────────────────
 
@@ -200,15 +182,7 @@ function renderCalendar() {
             
             let percent = taskCount > 0 ? (completedCount / taskCount) * 100 : 0;
             
-            // Fallback to old format for chart compatibility
-            if (taskCount === 0) {
-                // Try old format if no new tasks found
-                let oldData = JSON.parse(localStorage.getItem(key)) || [];
-                if (Array.isArray(oldData) && oldData.length > 0) {
-                    let oldDone = oldData.filter(v => v).length;
-                    percent = oldData.length ? (oldDone / oldData.length) * 100 : 0;
-                }
-            }
+            // No fallback for chart compatibility - Firebase only
 
             if (percent === 0) div.classList.add("red");
             else if (percent < 50) div.classList.add("orange");
@@ -236,11 +210,12 @@ function renderCalendar() {
                 div.style.border = "1px solid #444";
             }
 
+            // Add click event to show Summary Tab
             div.onclick = () => {
-            console.log('Calendar date clicked:', { key, year, month, day: d });
-            console.log('Calling openDay with parameters:', key, year, month, d);
-            openDay(key, year, month, d);
-        };
+                console.log('Calendar date clicked for summary:', { key, year, month, day: d });
+                showSummaryTab(key, year, month, d);
+            };
+
             calendar.appendChild(div);
         }
 
@@ -255,10 +230,175 @@ function changeMonth(val) {
     renderCalendar();
 }
 
-// ─── 3D DAILY TASKS TAB ─────────────────────────────────────────────────
+function showSummaryTab(key, year, month, day) {
+    console.log('showSummaryTab called with:', { key, year, month, day });
+    try {
+        // Update summary tab date
+        const selectedDate = new Date(year, month, day);
+        const formattedDate = selectedDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: '2-digit', 
+            year: 'numeric' 
+        });
+        console.log('Formatted date:', formattedDate);
+        
+        // Show the summary tab
+        const tab = document.getElementById("summaryTab");
+        console.log('Summary tab found:', !!tab);
+        if (tab) {
+            tab.classList.remove("hidden");
+            // Force visibility with inline styles
+            tab.style.display = 'block';
+            tab.style.visibility = 'visible';
+            tab.style.opacity = '1';
+            tab.style.zIndex = '2000';
+            console.log('Summary tab shown');
+        }
+        
+        // Set the date in the tab header
+        const tabDateElement = document.getElementById("summaryDate");
+        if (tabDateElement) {
+            tabDateElement.textContent = formattedDate;
+            console.log('Summary date set to:', formattedDate);
+        }
 
-function updateDailyTasksButton() {
-    // Set today's date in mmm-dd-yyyy format
+        // Load summary data for the selected date
+        loadSummaryData(key);
+
+        // Add body classes to prevent blur and enable proper styling
+        document.body.classList.add("modal-open");
+        document.body.classList.add("summary-open");
+
+        // Show overlay to create modal effect
+        const overlay = document.getElementById("overlay");
+        if (overlay) {
+            overlay.classList.remove("hidden");
+            console.log('Overlay shown');
+        }
+        
+        console.log('Summary tab opened successfully');
+    } catch (error) {
+        console.error('Error opening summary tab:', error);
+        alert('Error opening summary tab. Please try again.');
+    }
+}
+
+function closeSummaryTab() {
+    // Hide the summary tab
+    const tab = document.getElementById("summaryTab");
+    if (tab) {
+        tab.classList.add("hidden");
+    }
+    
+    // Hide overlay
+    const overlay = document.getElementById("overlay");
+    if (overlay) {
+        overlay.classList.add("hidden");
+    }
+    
+    // Remove body classes
+    document.body.classList.remove("modal-open");
+    document.body.classList.remove("summary-open"); 
+}
+
+function loadSummaryData(dateKey) {
+    try {
+        console.log('Loading summary data for date:', dateKey);
+        const loadPath = getCurrentUserPath(`dailyTasks/${dateKey}`);
+        console.log('Loading from Firebase path:', loadPath);
+        
+        if (currentUser) {
+            firebaseGet(loadPath)
+                .then(savedData => {
+                    console.log('Summary data received for date:', dateKey, savedData);
+                    
+                    // Update EXP and Coins
+                    const expElement = document.getElementById("summaryEXP");
+                    const coinsElement = document.getElementById("summaryCoins");
+                    
+                    if (savedData) {
+                        expElement.textContent = savedData.totalEXP || 0;
+                        coinsElement.textContent = savedData.totalCoins || 0;
+                        
+                        // Separate achieved and unaccomplished tasks
+                        const achievedTasks = [];
+                        const unaccomplishedTasks = [];
+                        
+                        for (let taskKey in savedData) {
+                            if (taskKey !== 'guiltLevel' && taskKey !== 'totalEXP' && taskKey !== 'totalCoins' && taskKey !== 'date' && taskKey !== 'timestamp') {
+                                if (savedData[taskKey] === true) {
+                                    achievedTasks.push(taskKey);
+                                } else {
+                                    unaccomplishedTasks.push(taskKey);
+                                }
+                            }
+                        }
+                        
+                        // Display achieved tasks
+                        const achievedContainer = document.getElementById("achievedTasks");
+                        achievedContainer.innerHTML = "";
+                        achievedTasks.forEach(task => {
+                            const label = document.createElement("label");
+                            label.style.cssText = `
+                                display: block;
+                                margin: 8px 0;
+                                padding: 8px 12px;
+                                background: rgba(0, 255, 170, 0.1);
+                                border-radius: 8px;
+                                cursor: default;
+                            `;
+                            label.innerHTML = `&#10004; ${task}`;
+                            achievedContainer.appendChild(label);
+                        });
+                        
+                        // Display unaccomplished tasks
+                        const unaccomplishedContainer = document.getElementById("unaccomplishedTasks");
+                        unaccomplishedContainer.innerHTML = "";
+                        unaccomplishedTasks.forEach(task => {
+                            const label = document.createElement("label");
+                            label.style.cssText = `
+                                display: block;
+                                margin: 8px 0;
+                                padding: 8px 12px;
+                                background: rgba(255, 100, 100, 0.1);
+                                border-radius: 8px;
+                                cursor: default;
+                            `;
+                            label.innerHTML = `&#10006; ${task}`;
+                            unaccomplishedContainer.appendChild(label);
+                        });
+                        
+                        // Display guild status
+                        const guildElement = document.getElementById("guildStatus");
+                        const guiltLevel = savedData.guiltLevel || "none";
+                        let guildStatus = "Active";
+                        
+                        if (guiltLevel === 'high') guildStatus = "Penalty Applied";
+                        else if (guiltLevel === 'mid') guildStatus = "Warning";
+                        else if (guiltLevel === 'low') guildStatus = "Minor Penalty";
+                        
+                        guildElement.textContent = guildStatus;
+                    } else {
+                        // No data - show zeros and empty lists
+                        expElement.textContent = "0";
+                        coinsElement.textContent = "0";
+                        document.getElementById("achievedTasks").innerHTML = "<p style='color: #888;'>No tasks completed</p>";
+                        document.getElementById("unaccomplishedTasks").innerHTML = "<p style='color: #888;'>No tasks recorded</p>";
+                        document.getElementById("guildStatus").textContent = "No Data";
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading summary data:', error);
+                });
+        } else {
+            console.error('No current user - cannot load summary data');
+        }
+    } catch (error) {
+        console.error('Error in loadSummaryData:', error);
+    }
+}
+
+function updateDateButton() {
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-US', { 
         month: 'short', 
@@ -266,56 +406,99 @@ function updateDailyTasksButton() {
         year: 'numeric' 
     });
     
-    // Update button text
-    const dailyTasksBtn = document.getElementById("dailyTasksBtn");
-    if (dailyTasksBtn) {
-        dailyTasksBtn.innerText = formattedDate;
+    const dateButton = document.getElementById("dateButton");
+    if (dateButton) {
+        dateButton.textContent = `Entry: ${formattedDate}`;
     }
-    
-    return formattedDate;
 }
 
-// Remove the event listener for daily tasks tab
-document.removeEventListener('click', function(e) {
-    const tab = document.getElementById('dailyTasksTab');
-    if (tab && !tab.classList.contains('hidden')) {
-        const isClickInsideTab = tab.contains(event.target);
-        const isClickOnButton = document.getElementById('dailyTasksBtn').contains(event.target);
-        
-        if (!isClickInsideTab && !isClickOnButton) {
-            closeDailyTasksTab();
-        }
-    }
-});
-
-// Daily Tasks Tab Functions
 function openDailyTasksTab() {
+    console.log('Opening daily tasks tab for today');
     try {
-        // Update button date
-        const formattedDate = updateDailyTasksButton();
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+        const day = today.getDate();
+        const dateKey = formatDateKey(today);
+        
+        // Call the existing function to open the daily tasks tab for today
+        openDailyTasksTabForDate(dateKey, year, month, day);
+    } catch (error) {
+        console.error('Error opening daily tasks tab:', error);
+        alert('Error opening daily tasks tab. Please try again.');
+    }
+}
+
+function openDay(key, year, month, day) {
+    console.log('openDay function called with:', { key, year, month, day });
+    try {
+        // Open daily tasks tab for any date click
+        console.log('Calling openDailyTasksTabForDate...');
+        openDailyTasksTabForDate(key, year, month, day);
+        console.log('openDailyTasksTabForDate call completed');
+    } catch (error) {
+        console.error('Error in openDay:', error);
+    }
+}
+
+function openDailyTasksTabForDate(key, year, month, day) {
+    console.log('openDailyTasksTabForDate called with:', { key, year, month, day });
+    try {
+        // Update button date to show selected date
+        const selectedDate = new Date(year, month, day);
+        const formattedDate = selectedDate.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: '2-digit', 
+            year: 'numeric' 
+        });
+        console.log('Formatted date:', formattedDate);
         
         // Show the tab
         const tab = document.getElementById("dailyTasksTab");
+        console.log('Daily tasks tab found:', !!tab);
         if (tab) {
             tab.classList.remove("hidden");
+            // Force visibility with inline styles
+            tab.style.display = 'block';
+            tab.style.visibility = 'visible';
+            tab.style.opacity = '1';
+            tab.style.zIndex = '2000';
+            console.log('Tab shown, classes:', tab.className);
+            console.log('Tab styles:', tab.style.cssText);
         }
         
         // Set the date in the tab header
         const tabDateElement = document.getElementById("tabDate");
+        console.log('Tab date element found:', !!tabDateElement);
         if (tabDateElement) {
             tabDateElement.textContent = formattedDate;
+            console.log('Tab date set to:', formattedDate);
+        }
+
+        // Load saved tasks for the selected date
+        console.log('Calling loadDailyTasksForDate with key:', key);
+        loadDailyTasksForDate(key);
+
+        // Add body classes to prevent blur and enable proper styling
+        document.body.classList.add("modal-open");
+        document.body.classList.add("daily-tasks-open");
+
+        // Show overlay to create modal effect
+        const overlay = document.getElementById("overlay");
+        if (overlay) {
+            overlay.classList.remove("hidden");
+            console.log('Overlay shown');
         }
         
-        // Load saved tasks for today
-        loadDailyTasksForTab();
-        
-        // Add body class to prevent blur
-        document.body.classList.add("daily-tasks-open");
-        
+        console.log('Body classes added: modal-open, daily-tasks-open');
+
         // Update experience bar
+        console.log('Updating experience bar');
         updateExperienceBar();
+
+        console.log('openDailyTasksTabForDate completed successfully');
     } catch (error) {
-        console.error('Error in openDailyTasksTab:', error);
+        console.error('Error opening daily tasks tab for date:', error);
         alert('Error opening daily tasks tab. Please try again.');
     }
 }
@@ -323,16 +506,82 @@ function openDailyTasksTab() {
 function closeDailyTasksTab() {
     // Hide the tab
     const tab = document.getElementById("dailyTasksTab");
-    tab.classList.add("hidden");
+    if (tab) {
+        tab.classList.add("hidden");
+    }
     
-    // Remove body class
+    // Hide overlay
+    const overlay = document.getElementById("overlay");
+    if (overlay) {
+        overlay.classList.add("hidden");
+    }
+    
+    // Remove body classes
+    document.body.classList.remove("modal-open");
     document.body.classList.remove("daily-tasks-open"); 
+}
+
+function loadDailyTasksForDate(dateKey) {
+    try {
+        console.log('Loading tasks for date:', dateKey);
+        console.log('Current user during load:', currentUser);
+        const loadPath = getCurrentUserPath(`dailyTasks/${dateKey}`);
+        console.log('Loading from Firebase path:', loadPath);
+        
+        if (currentUser) {
+            firebaseGet(loadPath)
+                .then(savedData => {
+                    console.log('Data received for date:', dateKey, savedData);
+                    
+                    if (savedData) {
+                        // Load tasks into checkboxes using original format
+                        const taskCheckboxes = document.querySelectorAll('.daily-task');
+                        console.log('Found task checkboxes:', taskCheckboxes.length);
+                        
+                        taskCheckboxes.forEach(checkbox => {
+                            // Get task text from label
+                            const label = checkbox.parentElement;
+                            const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
+                            
+                            // Sanitize task name to match Firebase keys
+                            const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
+                            
+                            // Check if task was completed (check both sanitized and original for backward compatibility)
+                            checkbox.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
+                            console.log('Task:', taskText, 'Checked:', checkbox.checked);
+                        });
+                        
+                        // Load guilt level
+                        const guiltLevel = savedData.guiltLevel || "";
+                        const guiltLevelElement = document.getElementById('guiltLevel');
+                        if (guiltLevelElement) {
+                            guiltLevelElement.value = guiltLevel;
+                            console.log('Loaded guilt level:', guiltLevel);
+                        }
+                    } else {
+                        console.log('No Firebase data found for date:', dateKey);
+                        // If no data exists, clear all checkboxes and guilt level
+                        const taskCheckboxes = document.querySelectorAll('.daily-task');
+                        taskCheckboxes.forEach(checkbox => {
+                            checkbox.checked = false;
+                        });
+                        const guiltLevelElement = document.getElementById('guiltLevel');
+                        if (guiltLevelElement) {
+                            guiltLevelElement.value = "";
+                        }
+                    }
+                });
+        } else {
+            console.error('No current user - cannot load daily tasks');
+            alert('Please log in to load daily tasks from Firebase');
+        }
+    } catch (error) {
+        console.error('Error in loadDailyTasksForDate:', error);
+    }
 }
 
 function saveDailyTasksFromTab() {
     try {
-        console.log('saveDailyTasksFromTab called');
-        
         // Verify tab exists before proceeding
         const tab = document.getElementById("dailyTasksTab");
         if (!tab) {
@@ -431,8 +680,7 @@ function saveDailyTasksFromTab() {
         console.log('Date key:', dateKey);
         
         if (userPath && currentUser) {
-            // Save to Firebase
-            const taskPath = `${userPath}/dailyTasks/${dateKey}`;
+            const taskPath = userPath.endsWith('/') ? `${userPath}dailyTasks/${dateKey}` : `${userPath}/dailyTasks/${dateKey}`;
             console.log('Saving to Firebase path:', taskPath);
             console.log('Task data to save:', JSON.stringify(taskData, null, 2));
             
@@ -442,6 +690,11 @@ function saveDailyTasksFromTab() {
                     
                     // Update calendar
                     renderCalendar();
+                    
+                    // Also update calendar after delay to ensure Firebase sync
+                    setTimeout(() => {
+                        renderCalendar();
+                    }, 500);
                     
                     // Update experience and coins
                     updateTotalCoins();
@@ -462,318 +715,16 @@ function saveDailyTasksFromTab() {
                 })
                 .catch((error) => {
                     console.error('Error saving daily tasks to Firebase:', error);
-                    // Fallback to localStorage
-                    localStorage.setItem(dateKey, JSON.stringify(taskData));
-                    console.log('Fallback: Saved to localStorage');
-                    
-                    // Update UI even if Firebase failed
-                    renderCalendar();
-                    updateTotalCoins();
-                    updateExperienceBar();
-                    
-                    let message = 'Daily tasks saved locally!';
-                    if (guiltLevel) {
-                        message += ` (${guiltLevel} guilt applied)`;
-                    }
-                    showNotification(message, 'success');
-                    
-                    setTimeout(() => {
-                        closeDailyTasksTab();
-                    }, 1500);
+                    alert('Error saving tasks to Firebase. Please check your connection and try again.');
                 });
         } else {
-            // No Firebase user, save to localStorage
-            console.log('No current user, saving to localStorage');
-            localStorage.setItem(dateKey, JSON.stringify(taskData));
-            
-            // Update UI
-            renderCalendar();
-            updateTotalCoins();
-            updateExperienceBar();
-            
-            let message = 'Daily tasks saved locally!';
-            if (guiltLevel) {
-                message += ` (${guiltLevel} guilt applied)`;
-            }
-            showNotification(message, 'success');
-            
-            setTimeout(() => {
-                closeDailyTasksTab();
-            }, 1500);
+            console.error('No Firebase user - please log in to save tasks');
+            alert('Please log in to save tasks to Firebase');
         }
             
     } catch (error) {
         console.error('Error in saveDailyTasksFromTab:', error);
         alert(`Error saving tasks: ${error.message}`);
-    }
-}
-
-function loadDailyTasksForTab() {
-    try {
-        const today = new Date();
-        const dateKey = formatDateKey(today);
-        
-        if (currentUser) {
-            firebaseGet(getCurrentUserPath(`dailyTasks/${dateKey}`))
-                .then(savedData => {
-                    if (savedData) {
-                        // Load tasks into checkboxes using original format
-                        const taskCheckboxes = document.querySelectorAll('.daily-task');
-                        taskCheckboxes.forEach(checkbox => {
-                            // Get task text from label
-                            const label = checkbox.parentElement;
-                            const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
-                            
-                            // Sanitize task name to match Firebase keys
-                            const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
-                            
-                            // Check if task was completed (check both sanitized and original for backward compatibility)
-                            checkbox.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
-                        });
-                        
-                        // Load guilt level
-                        const guiltLevel = savedData.guiltLevel || "";
-                        const guiltLevelElement = document.getElementById('guiltLevel');
-                        if (guiltLevelElement) {
-                            guiltLevelElement.value = guiltLevel;
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading daily tasks:', error);
-                });
-        }
-    } catch (error) {
-        console.error('Error in loadDailyTasksForTab:', error);
-    }
-}
-
-function loadDailyTasksForDate(dateKey) {
-    try {
-        console.log('Loading tasks for date:', dateKey);
-        console.log('Current user during load:', currentUser);
-        const loadPath = getCurrentUserPath(`dailyTasks/${dateKey}`);
-        console.log('Loading from Firebase path:', loadPath);
-        
-        if (currentUser) {
-            firebaseGet(loadPath)
-                .then(savedData => {
-                    console.log('Data received for date:', dateKey, savedData);
-                    
-                    if (savedData) {
-                        // Load tasks into checkboxes using original format
-                        const taskCheckboxes = document.querySelectorAll('.daily-task');
-                        console.log('Found task checkboxes:', taskCheckboxes.length);
-                        
-                        taskCheckboxes.forEach(checkbox => {
-                            // Get task text from label
-                            const label = checkbox.parentElement;
-                            const taskText = label.textContent.replace(checkbox.checked ? '?' : '?', '').trim();
-                            
-                            // Sanitize task name to match Firebase keys
-                            const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
-                            
-                            // Check if task was completed (check both sanitized and original for backward compatibility)
-                            checkbox.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
-                            console.log('Task:', taskText, 'Checked:', checkbox.checked);
-                        });
-                        
-                        // Load guilt level
-                        const guiltLevel = savedData.guiltLevel || "";
-                        const guiltLevelElement = document.getElementById('guiltLevel');
-                        if (guiltLevelElement) {
-                            guiltLevelElement.value = guiltLevel;
-                            console.log('Loaded guilt level:', guiltLevel);
-                        }
-                    } else {
-                        console.log('No Firebase data found for date:', dateKey, 'checking localStorage...');
-                        // Try localStorage as fallback when Firebase returns null
-                        const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
-                        if (Object.keys(localStorageData).length > 0) {
-                            console.log('Found localStorage data for date:', dateKey, localStorageData);
-                            loadTasksFromData(localStorageData);
-                        } else {
-                            console.log('No data found anywhere for date:', dateKey);
-                            // If no data exists, clear all checkboxes and guilt level
-                            const taskCheckboxes = document.querySelectorAll('.daily-task');
-                            taskCheckboxes.forEach(checkbox => {
-                                checkbox.checked = false;
-                            });
-                            const guiltLevelElement = document.getElementById('guiltLevel');
-                            if (guiltLevelElement) {
-                                guiltLevelElement.value = "";
-                            }
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading daily tasks for date:', error, 'trying localStorage');
-                    // Fallback to localStorage on Firebase error
-                    const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
-                    if (Object.keys(localStorageData).length > 0) {
-                        console.log('Firebase error, using localStorage data for date:', dateKey, localStorageData);
-                        loadTasksFromData(localStorageData);
-                    } else {
-                        console.log('Firebase error and no localStorage data for date:', dateKey);
-                        // Clear checkboxes on error
-                        const taskCheckboxes = document.querySelectorAll('.daily-task');
-                        taskCheckboxes.forEach(checkbox => {
-                            checkbox.checked = false;
-                        });
-                        const guiltLevelElement = document.getElementById('guiltLevel');
-                        if (guiltLevelElement) {
-                            guiltLevelElement.value = "";
-                        }
-                    }
-                });
-        } else {
-            console.log('No current user, loading from localStorage for date:', dateKey);
-            // No Firebase user, try localStorage
-            const localStorageData = JSON.parse(localStorage.getItem(dateKey)) || {};
-            if (Object.keys(localStorageData).length > 0) {
-                console.log('Using localStorage data for date:', dateKey, localStorageData);
-                loadTasksFromData(localStorageData);
-            } else {
-                console.log('No localStorage data found for date:', dateKey);
-                // Clear checkboxes and guilt level
-                const taskCheckboxes = document.querySelectorAll('.daily-task');
-                taskCheckboxes.forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                const guiltLevelElement = document.getElementById('guiltLevel');
-                if (guiltLevelElement) {
-                    guiltLevelElement.value = "";
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error in loadDailyTasksForDate:', error);
-    }
-}
-
-// Add event listener for closing daily tasks tab when clicking outside
-document.addEventListener('click', function(e) {
-    const tab = document.getElementById('dailyTasksTab');
-    if (tab && !tab.classList.contains('hidden')) {
-        const isClickInsideTab = tab.contains(event.target);
-        const isClickOnButton = document.getElementById('dailyTasksBtn').contains(event.target);
-        
-        if (!isClickInsideTab && !isClickOnButton) {
-            closeDailyTasksTab();
-        }
-    }
-});
-
-// ─── OPEN DAILY ENTRIES ──────────────────────────────────────────────────
-
-function openDailyEntries() {
-    document.getElementById("dailyEntries").classList.remove("hidden");
-    document.getElementById("taskApp").classList.add("modal-open");
-    
-    // Set today's date
-    const today = new Date();
-    const formattedDate = today.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: '2-digit', 
-        year: 'numeric' 
-    });
-    document.getElementById("todayDate").innerText = formattedDate;
-    
-    // Load today's tasks if they exist
-    loadTodayTasks();
-    
-    // Update experience bar and level
-    updateExperienceBar();
-    
-    // Hide calendar and other elements
-    document.getElementById("calendar").style.display = "none";
-    document.getElementById("calendarHeader").style.display = "none";
-    document.getElementById("calendarDays").style.display = "none";
-    document.getElementById("chart").style.display = "none";
-}
-
-function closeDailyEntries() {
-    document.getElementById("dailyEntries").classList.add("hidden");
-    document.getElementById("taskApp").classList.remove("modal-open");
-    
-    // Show calendar and other elements again
-    document.getElementById("calendar").style.display = "grid";
-    document.getElementById("calendarHeader").style.display = "flex";
-    document.getElementById("calendarDays").style.display = "grid";
-    document.getElementById("chart").style.display = "block";
-}
-
-function loadTodayTasks() {
-    const today = new Date();
-    const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    
-    if (currentUser) {
-        // Try to get data from Firebase first
-        firebaseGet(getCurrentUserPath(`dailyTasks/${todayKey}`))
-            .then(savedData => {
-                if (savedData) {
-                    loadTasksFromData(savedData);
-                } else {
-                    // Fallback to localStorage
-                    let localStorageData = {};
-                    try {
-                        localStorageData = JSON.parse(localStorage.getItem(todayKey)) || {};
-                    } catch (parseError) {
-                        console.warn('Invalid data in localStorage for today:', parseError);
-                        localStorageData = {};
-                    }
-                    loadTasksFromData(localStorageData);
-                }
-                calculateTodayEXP();
-            })
-            .catch(error => {
-                console.error('Error loading daily tasks from Firebase:', error);
-                // Fallback to localStorage
-                let localStorageData = {};
-                try {
-                    localStorageData = JSON.parse(localStorage.getItem(todayKey)) || {};
-                } catch (parseError) {
-                    console.warn('Invalid data in localStorage for today:', parseError);
-                    localStorageData = {};
-                }
-                loadTasksFromData(localStorageData);
-                calculateTodayEXP();
-            });
-    } else {
-        // Fallback to localStorage if no current user
-        let savedData = {};
-        try {
-            savedData = JSON.parse(localStorage.getItem(todayKey)) || {};
-        } catch (parseError) {
-            console.warn('Invalid data in localStorage for today:', parseError);
-            savedData = {};
-        }
-        loadTasksFromData(savedData);
-        calculateTodayEXP();
-    }
-}
-
-function loadTasksFromData(savedData) {
-    // ...
-    // Load task checkboxes
-    const tasks = document.querySelectorAll('.daily-task');
-    tasks.forEach(task => {
-        // Get the task text more precisely - remove the checkbox and any extra whitespace
-        const label = task.parentElement;
-        const taskText = label.textContent.replace(task.checked ? '?' : '?', '').trim();
-        
-        // Sanitize task name to match Firebase keys
-        const sanitizedTaskName = taskText.replace(/[.#$\[\]\/]/g, '_');
-        
-        // Check both sanitized and original task names for backward compatibility
-        task.checked = savedData[sanitizedTaskName] || savedData[taskText] || false;
-    });
-    
-    // Load guilt level
-    const guiltLevel = savedData.guiltLevel || "";
-    const guiltLevelElement = document.getElementById('guiltLevel');
-    if (guiltLevelElement) {
-        guiltLevelElement.value = guiltLevel;
     }
 }
 
@@ -895,33 +846,10 @@ function saveDailyTasks() {
                     if (typeof drawGraph === 'function') {
                         drawGraph();
                     }
-                    if (typeof updateExperienceBar === 'function') {
-                        updateExperienceBar();
-                    }
                 });
         } else {
-            // Fallback to localStorage if no current user
-            console.log('No current user, saving to localStorage:', todayKey, taskData);
-            localStorage.setItem(todayKey, JSON.stringify(taskData));
-            
-            // Update global tracking
-            if (typeof updateGlobalTracking === 'function') {
-                updateGlobalTracking(totalEXP, totalCoins, guiltPenalty);
-            }
-            
-            // Update all UI elements live
-            if (typeof updateTotalCoins === 'function') {
-                updateTotalCoins();
-            }
-            if (typeof renderCalendar === 'function') {
-                renderCalendar();
-            }
-            if (typeof drawGraph === 'function') {
-                drawGraph();
-            }
-            if (typeof updateExperienceBar === 'function') {
-                updateExperienceBar();
-            }
+            console.error('No Firebase user - cannot save tasks');
+            alert('Please log in to save tasks to Firebase');
         }
         
         // Show success message
@@ -959,43 +887,39 @@ function saveDailyTasks() {
 }
 
 function calculateTodayEXP() {
-    const today = new Date();
-    const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
-    let savedData = {};
-    try {
-        savedData = JSON.parse(localStorage.getItem(todayKey)) || {};
-    } catch (error) {
-        console.warn('Invalid data in localStorage for today:', error);
-        savedData = {};
-    }
-    
-    let totalEXP = 0;
-    const tasks = document.querySelectorAll('.daily-task');
-    tasks.forEach(task => {
-        if (task.checked) {
-            totalEXP += parseInt(task.dataset.exp) || 0;
-        }
-    });
-    
-    // Calculate cumulative EXP
-    let cumulativeEXP = 0;
-    const allDays = Object.keys(localStorage).filter(key => !key.includes('entriesLog') && !key.includes('user') && !key.includes('finance'));
-    allDays.forEach(dayKey => {
-        try {
-            const dayData = JSON.parse(localStorage.getItem(dayKey)) || {};
-            if (dayData.totalEXP) {
-                cumulativeEXP += dayData.totalEXP;
-            }
-        } catch (error) {
-            console.warn('Skipping invalid data for key:', dayKey, error);
-            // Skip invalid JSON data
-        }
-    });
-    
-    // Update cumulative EXP display
-    const cumulativeEXPElement = document.getElementById('cumulativeEXP');
-    if (cumulativeEXPElement) {
-        cumulativeEXPElement.textContent = cumulativeEXP;
+    if (currentUser) {
+        const today = new Date();
+        const todayKey = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+        
+        // Get today's data from Firebase
+        getDailyTasksData(todayKey, (savedData) => {
+            let totalEXP = 0;
+            const tasks = document.querySelectorAll('.daily-task');
+            tasks.forEach(task => {
+                if (task.checked) {
+                    totalEXP += parseInt(task.dataset.exp) || 0;
+                }
+            });
+            
+            // Calculate cumulative EXP from Firebase
+            getAllDailyTasks((allTasksData) => {
+                let cumulativeEXP = 0;
+                for (let dayKey in allTasksData) {
+                    const dayData = allTasksData[dayKey];
+                    if (dayData && dayData.totalEXP) {
+                        cumulativeEXP += dayData.totalEXP;
+                    }
+                }
+                
+                // Update cumulative EXP display
+                const cumulativeEXPElement = document.getElementById('cumulativeEXP');
+                if (cumulativeEXPElement) {
+                    cumulativeEXPElement.textContent = cumulativeEXP;
+                }
+            });
+        });
+    } else {
+        console.error('No Firebase user - cannot calculate EXP');
     }
 }
 
@@ -1008,119 +932,7 @@ function updateGlobalTracking(exp, coins, penalty) {
 }
 
 function getTotalCoins() {
-    let total = 0;
-    for (let i = 0; i < localStorage.length; i++) {
-        let key = localStorage.key(i);
-        if (key === "user" || key === "finance") continue;
-        
-        let data;
-        try {
-            data = JSON.parse(localStorage.getItem(key));
-        } catch {
-            continue;
-        }
-        
-        if (data && data.totalCoins) {
-            total += data.totalCoins;
-        }
-    }
-    return total;
-}
-
-function getNetWorth() {
-    let data = JSON.parse(localStorage.getItem("finance")) || [];
-    let netWorth = 0;
-    
-    data.forEach(d => {
-        if (d.type === "income") {
-            netWorth += d.amount;
-        } else if (d.type === "expense") {
-            netWorth -= d.amount;
-        } else if (d.type === "savings") {
-            if (d.action === "sell") {
-                netWorth += d.amount;
-            } else {
-                netWorth -= d.amount;
-            }
-        }
-    });
-    
-    return netWorth;
-}
-
-function calculateStreaks() {
-    // This is a simplified streak calculation
-    // In a full implementation, we would track consecutive days and calculate bonuses
     dailyStreak = 1; // Placeholder
-}
-
-// ─── OPEN DAY ─────────────────────────────────────────────────
-
-function openDay(key, year, month, day) {
-    console.log('openDay function called with:', { key, year, month, day });
-    try {
-        // Open daily tasks tab for any date click
-        console.log('Calling openDailyTasksTabForDate...');
-        openDailyTasksTabForDate(key, year, month, day);
-        console.log('openDailyTasksTabForDate call completed');
-    } catch (error) {
-        console.error('Error in openDay:', error);
-    }
-}
-
-function openDailyTasksTabForDate(key, year, month, day) {
-    console.log('openDailyTasksTabForDate called with:', { key, year, month, day });
-    try {
-        // Update button date to show selected date
-        const selectedDate = new Date(year, month, day);
-        const formattedDate = selectedDate.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: '2-digit', 
-            year: 'numeric' 
-        });
-        console.log('Formatted date:', formattedDate);
-        
-        // Update button text to show selected date
-        const dailyTasksBtn = document.getElementById("dailyTasksBtn");
-        console.log('Daily tasks button found:', !!dailyTasksBtn);
-        if (dailyTasksBtn) {
-            dailyTasksBtn.innerText = formattedDate;
-            console.log('Button text updated to:', formattedDate);
-        }
-        
-        // Show the tab
-        const tab = document.getElementById("dailyTasksTab");
-        console.log('Daily tasks tab found:', !!tab);
-        if (tab) {
-            tab.classList.remove("hidden");
-            console.log('Tab shown, classes:', tab.className);
-        }
-        
-        // Set the date in the tab header
-        const tabDateElement = document.getElementById("tabDate");
-        console.log('Tab date element found:', !!tabDateElement);
-        if (tabDateElement) {
-            tabDateElement.textContent = formattedDate;
-            console.log('Tab date set to:', formattedDate);
-        }
-        
-        // Load saved tasks for the selected date
-        console.log('Calling loadDailyTasksForDate with key:', key);
-        loadDailyTasksForDate(key);
-        
-        // Add body class to prevent blur
-        document.body.classList.add("daily-tasks-open");
-        console.log('Body class added');
-        
-        // Update experience bar
-        console.log('Updating experience bar');
-        updateExperienceBar();
-        
-        console.log('openDailyTasksTabForDate completed successfully');
-    } catch (error) {
-        console.error('Error opening daily tasks tab for date:', error);
-        alert('Error opening daily tasks tab. Please try again.');
-    }
 }
 
 function showPastDateDetails(key, year, month, day) {
@@ -1135,13 +947,19 @@ function showPastDateDetails(key, year, month, day) {
     // Set modal title
     document.getElementById("pastDateTitle").textContent = formattedDate;
     
-    // Load data for that date
+    // Load data for that date from Firebase only
     let dayData = {};
-    try {
-        dayData = JSON.parse(localStorage.getItem(key)) || {};
-    } catch (error) {
-        console.warn('Invalid data in localStorage for date:', key, error);
-        dayData = {};
+    if (currentUser) {
+        firebaseGet(getCurrentUserPath(`dailyTasks/${key}`))
+            .then(data => {
+                dayData = data || {};
+            })
+            .catch(error => {
+                console.error('Error loading data for date:', error);
+                dayData = {};
+            });
+    } else {
+        console.error('No Firebase user - cannot load date details');
     }
     
     // Calculate coins and EXP
@@ -1220,20 +1038,21 @@ function initializeAvatar() {
     avatarMessages = [
         "What did you conquer today in your pursuit of wisdom?",
         `You stand at Stage ${currentLevel} on your path to ultimate wisdom - do you have what it takes to reach the top?`,
-        `Current Battle Fund: ${getTotalCoins()} - every coin counts on this journey`,
-        `Net Worth: ${getNetWorth()} - your financial foundation for wisdom`
+        `Current Battle Fund: ${getTotalCoins()} - every coin counts on this journey`
     ];
     
     // Position avatar based on current screen
     const homeScreen = document.getElementById("homeScreen");
+    const taskApp = document.getElementById("taskApp");
+    const financeApp = document.getElementById("financeApp");
+    
+    // Always hide avatar on task tracker and finance tracker
     if (homeScreen.classList.contains("hidden")) {
         // Hide avatar on task tracker and finance tracker
         avatar.classList.add("hidden");
         speech.classList.add("hidden");
     } else {
-        // Show avatar only on home screen - center with fade in
-        avatar.classList.remove("hidden");
-        speech.classList.remove("hidden");
+        // Show avatar only on home screen
         avatar.style.position = "fixed";
         avatar.style.top = "50%";
         avatar.style.left = "50%";
@@ -1346,14 +1165,10 @@ function openTasks() {
             userNameDisplay.innerText = userName.toUpperCase();
         }
 
-        // Update daily tasks button with today's date
-        updateDailyTasksButton();
-
         renderCalendar();
         updateTotalCoins();
         updateExperienceBar();
         initializeAvatar();
-        loadTodayTasks();
         drawGraph();
     }, 2000);
 }
@@ -1686,21 +1501,37 @@ function updateTotalCoins() {
 // ─── USER SYSTEM ──────────────────────────────────────────────────────────────
 
 function checkUser() {
-    // Always show login interface on app launch
-    currentUser = null;
+    // Check if user is already authenticated
+    const storedUid = localStorage.getItem('userUid');
+    const storedEmail = localStorage.getItem('userEmail');
+    const storedName = localStorage.getItem('userName');
     
-    // Hide all main screens
-    document.getElementById("homeScreen").classList.add("hidden");
-    document.getElementById("taskApp").classList.add("hidden");
-    document.getElementById("financeApp").classList.add("hidden");
-    
-    // Clear any stored session data to force login
-    localStorage.removeItem('userUid');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userName');
-    
-    // Show login popup
-    showLogin();
+    if (storedUid && storedEmail) {
+        // User has stored credentials, show home screen
+        console.log('Found stored user credentials, showing home screen');
+        currentUser = { uid: storedUid, email: storedEmail, displayName: storedName };
+        
+        // Show home screen
+        document.getElementById("homeScreen").classList.remove("hidden");
+        document.getElementById("taskApp").classList.add("hidden");
+        document.getElementById("financeApp").classList.add("hidden");
+        document.getElementById("loginScreen").classList.add("hidden");
+        
+        // Load user data
+        loadUserData();
+    } else {
+        // No stored credentials, show login screen
+        console.log('No stored credentials, showing login screen');
+        currentUser = null;
+        
+        // Hide all main screens
+        document.getElementById("homeScreen").classList.add("hidden");
+        document.getElementById("taskApp").classList.add("hidden");
+        document.getElementById("financeApp").classList.add("hidden");
+        
+        // Show login popup
+        showLogin();
+    }
 }
 
 // Logout function to force login on next visit
@@ -3230,37 +3061,13 @@ window.onload = function () {
     // Always show avatar on home screen
     initializeAvatar();
     
-    // Add multiple attempts to ensure button gets updated
-    setTimeout(() => {
-        updateDailyTasksButton();
-    }, 200);
-    
-    setTimeout(() => {
-        updateDailyTasksButton();
-    }, 500);
-    
-    setTimeout(() => {
-        updateDailyTasksButton();
-    }, 1000);
-    
     // Initialize new task tracker systems
     updateTotalCoins();
     updateGlobalTracking(); // Initialize cumulative coins
     updateExperienceBar();
     
-    // Add click outside functionality for 3D tab
-    document.addEventListener("click", function(event) {
-        const tab = document.getElementById('dailyTasksTab');
-        if (!tab.classList.contains('hidden')) {
-            // Check if click is outside the tab
-            const isClickInsideTab = tab.contains(event.target);
-            const isClickOnButton = document.getElementById('dailyTasksBtn').contains(event.target);
-            
-            if (!isClickInsideTab && !isClickOnButton) {
-                closeDailyTasksTab();
-            }
-        }
-    });
+    // Update date button with today's date
+    updateDateButton();
     
     // Check if first time today and show appropriate avatar message
     if (getFirstTimeToday()) {
@@ -3304,7 +3111,7 @@ document.addEventListener("click", function(event) {
 // Show login popup
 function showLogin() {
     hideAllPopups();
-    document.getElementById('loginPopup').classList.remove('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('overlay').classList.remove('hidden');
     document.body.classList.add('modal-open');
     
@@ -3342,11 +3149,20 @@ function showForgotPassword() {
 
 // Hide all popups
 function hideAllPopups() {
-    document.getElementById('loginPopup').classList.add('hidden');
-    document.getElementById('signupPopup').classList.add('hidden');
-    document.getElementById('forgotPasswordPopup').classList.add('hidden');
-    document.getElementById('userPopup').classList.add('hidden');
-    document.getElementById('welcomePopup').classList.add('hidden');
+    const loginScreen = document.getElementById('loginScreen');
+    if (loginScreen) loginScreen.classList.add('hidden');
+    
+    const signupPopup = document.getElementById('signupPopup');
+    if (signupPopup) signupPopup.classList.add('hidden');
+    
+    const forgotPasswordPopup = document.getElementById('forgotPasswordPopup');
+    if (forgotPasswordPopup) forgotPasswordPopup.classList.add('hidden');
+    
+    const userPopup = document.getElementById('userPopup');
+    if (userPopup) userPopup.classList.add('hidden');
+    
+    const welcomePopup = document.getElementById('welcomePopup');
+    if (welcomePopup) welcomePopup.classList.add('hidden');
 }
 
 // Login user
