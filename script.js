@@ -422,11 +422,15 @@ function saveDailyTasksFromTab() {
         
         // Save to Firebase or localStorage
         const userPath = getCurrentUserPath();
+        console.log('Current user:', currentUser);
+        console.log('User path:', userPath);
+        console.log('Date key:', dateKey);
         
         if (userPath && currentUser) {
             // Save to Firebase
             const taskPath = `${userPath}/dailyTasks/${dateKey}`;
             console.log('Saving to Firebase path:', taskPath);
+            console.log('Task data to save:', JSON.stringify(taskData, null, 2));
             
             firebaseSet(taskPath, taskData)
                 .then(() => {
@@ -543,9 +547,12 @@ function loadDailyTasksForTab() {
 function loadDailyTasksForDate(dateKey) {
     try {
         console.log('Loading tasks for date:', dateKey);
+        console.log('Current user during load:', currentUser);
+        const loadPath = getCurrentUserPath(`dailyTasks/${dateKey}`);
+        console.log('Loading from Firebase path:', loadPath);
         
         if (currentUser) {
-            firebaseGet(getCurrentUserPath(`dailyTasks/${dateKey}`))
+            firebaseGet(loadPath)
                 .then(savedData => {
                     console.log('Data received for date:', dateKey, savedData);
                     
